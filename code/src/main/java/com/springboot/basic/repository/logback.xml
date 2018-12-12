@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="60 second"
+	debug="true">
+
+	<!-- definition of appender STDOUT -->
+	<appender name="consoleAppender"
+		class="ch.qos.logback.core.ConsoleAppender">
+		<layout class="ch.qos.logback.classis.PatternLayout">
+			<pattern>%d{HH:mm:ss},%-4relative [%thread] %-5level %logger{80} -
+				%msg %n</pattern>
+		</layout>
+		<filter class="ch.qos.logback.classis.filter.ThresholdFilter">
+			<level>TRACE</level>
+		</filter>
+	</appender>
+	<appender name="logFileAppender"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>logs/info.log</file>
+		<encoder>
+			<pattern>%d{HH:mm:ss},%-4relative [%thread] %-5level %logger{80} -
+				%msg %n</pattern>
+			<charset>UTF-8</charset>
+		</encoder>
+	</appender>
+	<root level="DEBUG">
+		<!-- appender referenced after it is defined -->
+		<appender ref="consoleAppender" />
+	</root>
+	<root level="INFO">
+		<!-- appender referenced after it is defined -->
+		<appender ref="logFileAppender" />
+	</root>
+
+</configuration>
