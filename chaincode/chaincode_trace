@@ -151,19 +151,19 @@ func (t *TraceChaincode) queryGoods(stub shim.ChaincodeStubInterface, args []str
 	id = args[0]
 
 	// Get the state from the ledger
-	rolebytes, err := stub.GetState(id)
+	goodsbytes, err := stub.GetState(id)
 	if err != nil {
 		jsonResp := "{\"Error\":\"Failed to get state for " + id + "\"}"
 		return shim.Error(jsonResp)
 	}
 
-	if rolebytes == nil {
+	if goodsbytes == nil {
 		jsonResp := "{\"Error\":\"Nil amount for " + id + "\"}"
 		return shim.Error(jsonResp)
 	}
 
 	data[0] = "查询成功"
-	data[1] = string(newRolebytes)
+	data[1] = string(goodsbytes)
 	databytes,_ := json.Marshal(data)
 
 	return shim.Success(databytes)
@@ -181,19 +181,19 @@ func (t *TraceChaincode) queryLogistic(stub shim.ChaincodeStubInterface, args []
 	id = args[0]
 
 	// Get the state from the ledger
-	rolebytes, err := stub.GetState(id)
+	logisticbytes, err := stub.GetState(id)
 	if err != nil {
 		jsonResp := "{\"Error\":\"Failed to get state for " + id + "\"}"
 		return shim.Error(jsonResp)
 	}
 
-	if rolebytes == nil {
+	if logisticbytes == nil {
 		jsonResp := "{\"Error\":\"Nil amount for " + id + "\"}"
 		return shim.Error(jsonResp)
 	}
 
 	data[0] = "查询成功"
-	data[1] = string(newRolebytes)
+	data[1] = string(logisticbytes)
 	databytes,_ := json.Marshal(data)
 
 	return shim.Success(databytes)
