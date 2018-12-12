@@ -158,7 +158,7 @@ func (t *TraceChaincode)addLogistic(stub shim.ChaincodeStubInterface, args []str
 	var id, goodsId, cityName string
 	var err error
 
-	if len(args) != 2 {
+	if len(args) != 3 {
 		return shim.Error("Incorrect number of arguments. Expecting name of the person to query")
 	}
 
@@ -233,7 +233,7 @@ func (t *TraceChaincode) queryAllGoods(stub shim.ChaincodeStubInterface, args []
 	var data [2]string
 	var goodsInfos []byte
 
-	for i := 0; i < len(goodsIds); i++ {
+	for i := 0; i < len(goodsIds) - 1; i++ {
 		// Get the state from the ledger
 		goodsbytes, err := stub.GetState(goodsIds[i])
 		if err != nil {
@@ -355,7 +355,7 @@ func (t *TraceChaincode) queryAllLogistic(stub shim.ChaincodeStubInterface, args
 	var logisticInfos []byte
 	logisticIds := goods_logistics[goodsId]
 
-	for i := 0; i < len(logisticIds); i++ {
+	for i := 0; i < len(logisticIds) - 1; i++ {
 		// Get the state from the ledger
 		logisticbytes, err := stub.GetState(logisticIds[i])
 		if err != nil {

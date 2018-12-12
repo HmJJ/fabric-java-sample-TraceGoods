@@ -1,4 +1,5 @@
 
+存数据不能存中文
 docker exec -it cli bash
 
 peer chaincode install -n tracegoods -p github.com/hyperledger/fabric/aberic/chaincode/go/trace_goods -v 1.0
@@ -11,7 +12,9 @@ peer chaincode query -C mychannel -n tracegoods -c '{"Args":["queryGoodsById","g
 
 peer chaincode query -C mychannel -n tracegoods -c '{"Args":["queryAllGoods"]}'
 
-peer chaincode invoke -C mychannel -n tracegoods -c '{"Args":["addLogistic","logistic_PS4_001","goods_001","美国"]}'
+peer chaincode invoke -C mychannel -n tracegoods -c '{"Args":["addLogistic","logistic_PS4_001","goods_001","America"]}'
+peer chaincode invoke -C mychannel -n tracegoods -c '{"Args":["addLogistic","logistic_PS4_002","goods_001","HongKong"]}'
+peer chaincode invoke -C mychannel -n tracegoods -c '{"Args":["addLogistic","logistic_PS4_003","goods_001","ShangHai"]}'
 
 peer chaincode query -C mychannel -n tracegoods -c '{"Args":["queryAllLogistic","goods_001"]}'
 
