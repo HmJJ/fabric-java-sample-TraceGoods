@@ -1,0 +1,254 @@
+package main
+
+import (
+	"fmt"
+	"strconv"
+	"encoding/json"
+	"github.com/satori/go.uuid"
+
+	"github.com/hyperledger/fabric/core/chaincode/shim"
+	pb "github.com/hyperledger/fabric/protos/peer"
+)
+
+type TraceChaincode struct {
+}
+
+/* 定义商品实体 */
+type Goods struct {
+	Id string
+	Name string
+	Price string
+	RegisterDate string
+}
+
+/* 定义物流实体 */
+tyepe Logistic struct {
+	Id string
+	GoodsId string
+	CityName string
+}
+
+/* 商品对应的所有物流信息 */
+var goods_logistics = map[string][]string{}
+/* 所有商品 */
+var goodsIds = map[int]string{}
+/* 所有物流 */
+var logistics = map[int]string{}
+
+/* 合约初始化入口 */
+func (t *TraceChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response {
+	fmt.Println("trace_goods Init")
+	
+	return shim.Success(nil)
+}
+
+/* 合约方法执行入口 */
+func (t *TraceChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
+	fmt.Println("the_dragon Invoke")
+	function, args := stub.GetFunctionAndParameters()
+	if function == "invoke" {
+		// Make payment of X units from A to B
+		return t.invoke(stub, args)
+	} else if function == "queryGoods" {
+		// the old "Query" is now implemtned in invoke
+		return t.queryGoods(stub, args)
+	} else if function == "queryLogistic" {
+		// the old "Query" is now implemtned in invoke
+		return t.queryLogistic(stub, args)
+	} else if function == "addGoods" {
+		return  t.addGoods(stub, args)
+	} else if function == "addLogistic" {
+		return  t.addLogistic(stub, args)
+	} else if function == "deleteGoods" {
+		// Deletes an entity from its state
+		return t.deleteGoods(stub, args)
+	} else if function == "deleteLogistic" {
+		// Deletes an entity from its state
+		return t.deleteLogistic(stub, args)
+	}
+
+	return shim.Error("Invalid invoke function name."+ function + "Expecting \"invoke\" \"delete\" \"query\" \"addGoods\" \"addLogistic\" \"deleteGoods\" \"deleteLogistic\" ")
+}
+
+/* 添加商品信息 */
+func (t *TraceChaincode)addGoods(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	//var goods Goods    // Entities
+	var name, price, registerDate string
+	var err error
+
+
+	// Initialize the chaincode
+	id := uuid.Must(uuid.NewV4())
+	name = args[0]
+	price = args[1]
+	registerDate = args[2]
+
+	fmt.Printf("id = %d,goodsName=%s, price = %s, registerDate = %s\n", id, name, price, registerDate)
+
+	// Write the state to the ledger
+	goods := Goods{Id:id, Name:name, Price:price, RegisterDate:registerDate}
+	goodsbytes,_ := json.Marshal(goods)
+	err = stub.PutState(id, goodsbytes)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+
+	goodsIds[len(goodsIds)] = id
+
+	var data [2]string
+	data[0] = "添加商品成功"
+	data[1] = string(goodsbytes)
+	databytes,_ := json.Marshal(data)
+	return shim.Success(databytes)
+}
+
+/* 添加物流信息 */
+func (t *TraceChaincode)addLogistic(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	//var logistic Logistic    // Entities
+	var goodsId, cityName string
+	var err error
+
+
+	// Initialize the chaincode
+	id := uuid.Must(uuid.NewV4())
+	goodsId = args[0]
+	cityName = args[1]
+
+	fmt.Printf("id = %d,goodsId=%s, price = %s, registerDate = %s\n", id, goodsId, cityName)
+
+	// Write the state to the ledger
+	logistic := Logistic{Id:id, GoodsId:goodsId, CityName:cityNam}
+	logisticbytes,_ := json.Marshal(logistic)
+	err = stub.PutState(id, logisticbytes)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+
+	logistics[len(logistics)] = id
+
+	var data [2]string
+	data[0] = "添加物流信息成功"
+	data[1] = string(logisticbytes)
+	databytes,_ := json.Marshal(data)
+	return shim.Success(databytes)
+}
+
+/* invoke方法 */
+func (t *TraceChaincode) invoke(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	
+	return shim.Success(nil)
+}
+
+/* 查看商品信息 */
+func (t *TraceChaincode) queryGoods(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	var id string
+	var data [2]string
+
+	if len(args) != 1 {
+		return shim.Error("Incorrect number of arguments. Expecting name of the person to query")
+	}
+
+	id = args[0]
+
+	// Get the state from the ledger
+	rolebytes, err := stub.GetState(id)
+	if err != nil {
+		jsonResp := "{\"Error\":\"Failed to get state for " + id + "\"}"
+		return shim.Error(jsonResp)
+	}
+
+	if rolebytes == nil {
+		jsonResp := "{\"Error\":\"Nil amount for " + id + "\"}"
+		return shim.Error(jsonResp)
+	}
+
+	data[0] = "查询成功"
+	data[1] = string(newRolebytes)
+	databytes,_ := json.Marshal(data)
+
+	return shim.Success(databytes)
+}
+
+/* 查看物流信息 */
+func (t *TraceChaincode) queryLogistic(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	var id string
+	var data [2]string
+
+	if len(args) != 1 {
+		return shim.Error("Incorrect number of arguments. Expecting name of the person to query")
+	}
+
+	id = args[0]
+
+	// Get the state from the ledger
+	rolebytes, err := stub.GetState(id)
+	if err != nil {
+		jsonResp := "{\"Error\":\"Failed to get state for " + id + "\"}"
+		return shim.Error(jsonResp)
+	}
+
+	if rolebytes == nil {
+		jsonResp := "{\"Error\":\"Nil amount for " + id + "\"}"
+		return shim.Error(jsonResp)
+	}
+
+	data[0] = "查询成功"
+	data[1] = string(newRolebytes)
+	databytes,_ := json.Marshal(data)
+
+	return shim.Success(databytes)
+}
+
+
+/* 删除商品信息 */
+func (t *TraceChaincode) deleteGoods(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	if len(args) != 1 {
+		return shim.Error("Incorrect number of arguments. Expecting 1")
+	}
+	var id string
+	var err error
+
+	id = args[0]
+	if err != nil {
+		return shim.Error("Expecting integer value for asset holding")
+	}
+
+	// Delete the key from the state in ledger
+	err = stub.DelState(id)
+	if err != nil {
+		return shim.Error("Failed to delete state")
+	}
+
+	return shim.Success(nil)
+}
+
+
+/* 删除物流信息 */
+func (t *TraceChaincode) deleteLogistic(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	if len(args) != 1 {
+		return shim.Error("Incorrect number of arguments. Expecting 1")
+	}
+	var id string
+	var err error
+
+	id = args[0]
+	if err != nil {
+		return shim.Error("Expecting integer value for asset holding")
+	}
+
+	// Delete the key from the state in ledger
+	err = stub.DelState(id)
+	if err != nil {
+		return shim.Error("Failed to delete state")
+	}
+
+	return shim.Success(nil)
+}
+
+/* 合约入口 */
+func main() {
+	err := shim.Start(new(TraceChaincode))
+	if err != nil {
+		fmt.Printf("Error starting Trace chaincode: %s", err)
+	}
+}

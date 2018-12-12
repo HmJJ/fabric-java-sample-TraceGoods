@@ -1,9 +1,133 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<meta charset="utf-8">
-		<title></title>
+		<title>Product</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<meta name="viewport" content="width=device-width,height=device-height,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+
+		<link rel="stylesheet" href="./../static/bootstrap-3.3.7-dist/css/bootstrap.min.css" />
+		<script src="./../static/jquery-3.3.1/jquery-3.3.1.min.js"></script>
+		<script src="./../static/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
+
+		<link rel="stylesheet" href="../css/showGoods.css" />
 	</head>
 	<body>
+		<nav class="navbar navbar-default">
+			<div class="container-fluid">
+				<!-- Brand and toggle get grouped for better mobile display -->
+				<div class="navbar-header">
+					<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1"
+					 aria-expanded="false">
+						<span class="sr-only">Toggle navigation</span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+					</button>
+					<a class="navbar-brand" href="./main.html">Sheep Mall</small></a>
+				</div>
+
+				<!-- Collect the nav links, forms, and other content for toggling -->
+				<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+					<ul class="nav navbar-nav">
+						<li><a href="./main.html">首页 <span class="sr-only">(current)</span></a></li>
+						<li class="active"><a href="./showGoods.html">商品</a></li>
+						<li><a href="./showFabric.html">fabric</a></li>
+					</ul>
+					<ul class="nav navbar-nav navbar-right">
+						<li class="dropdown">
+							<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">个人中心
+								<span class="caret"></span></a>
+							<ul class="dropdown-menu">
+								<li><a href="#">个人资料</a></li>
+								<li role="separator" class="divider"></li>
+								<li><a href="./../index.html">退出登录</a></li>
+							</ul>
+						</li>
+					</ul>
+				</div><!-- /.navbar-collapse -->
+
+			</div><!-- /.container-fluid -->
+		</nav>
+		<div class="container-fluid">
+
+			<div class="row title">
+				<div class="col-xs-2">
+					<span class="title_word">商品一览</span>
+				</div>
+				<div class="col-xs-7">
+				</div>
+				<div class="col-xs-1" style="text-align: right;">
+					<a href="add_modify_goods.html"><button class="btn btn-default">新增</button></a>
+				</div>
+				<div class="col-xs-1" style="text-align: left;">
+					<button class="btn btn-default" onclick="javascript:history.back(-1);">返回</button>
+				</div>
+				<div class="col-xs-1">
+				</div>
+			</div>
+
+			<div class="row goodsList" data-example-id="striped-table">
+				<table class="table table-striped">
+					<thead>
+						<tr>
+							<th class="col-xs-2">#</th>
+							<th class="col-xs-2">商品编号 ID</th>
+							<th class="col-xs-2">商品名称 Name</th>
+							<th class="col-xs-2">商品价格 Price</th>
+							<th class="col-xs-2">添加日期 Register Date</th>
+							<th class="col-xs-2">#</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<th class="col-xs-2" scope="row">1</th>
+							<td class="col-xs-2">Mark</td>
+							<td class="col-xs-2">Otto</td>
+							<td class="col-xs-2">@mdo</td>
+							<td class="col-xs-2">@mdo</td>
+							<td class="col-xs-2"><a href="add_modify_goods.html"><button class="btn btn-sm btn-info">详情</button></a></td>
+						</tr>
+						<tr>
+							<th class="col-xs-2" scope="row">2</th>
+							<td class="col-xs-2">Mark</td>
+							<td class="col-xs-2">Otto</td>
+							<td class="col-xs-2">@mdo</td>
+							<td class="col-xs-2">@mdo</td>
+							<td class="col-xs-2"><a href="add_modify_goods.html"><button class="btn btn-sm btn-info">详情</button></a></td>
+						</tr>
+						<tr>
+							<th class="col-xs-2" scope="row">3</th>
+							<td class="col-xs-2">Mark</td>
+							<td class="col-xs-2">Otto</td>
+							<td class="col-xs-2">@mdo</td>
+							<td class="col-xs-2">@mdo</td>
+							<td class="col-xs-2"><a href="add_modify_goods.html"><button class="btn btn-sm btn-info">详情</button></a></td>
+						</tr>
+					</tbody>
+				</table>
+			</div><!-- /example -->
+
+			<nav aria-label="Page navigation" style="text-align: center;">
+				<ul class="pagination">
+					<li>
+						<a href="#" aria-label="Previous">
+							<span aria-hidden="true">&laquo;</span>
+						</a>
+					</li>
+					<li><a href="#">1</a></li>
+					<li><a href="#">2</a></li>
+					<li><a href="#">3</a></li>
+					<li><a href="#">4</a></li>
+					<li><a href="#">5</a></li>
+					<li>
+						<a href="#" aria-label="Next">
+							<span aria-hidden="true">&raquo;</span>
+						</a>
+					</li>
+				</ul>
+			</nav>
+
+		</div>
+
 	</body>
 </html>
