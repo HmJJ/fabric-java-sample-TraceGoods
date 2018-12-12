@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:v-on="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org"
+	xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3"
+	xmlns:layout="http://www.ultraq.net.nz/web/thymeleaf/layout"
+	th:remove="tag">
+	<head>
+		<title>INDEX</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<meta name="viewport" content="width=device-width,height=device-height,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+		
+		<script th:src="@{/jquery-3.3.1/jquery-3.3.1.min.js}" type="text/javascript"></script>
+		<script th:src="@{/bootstrap-3.3.7-dist/js/bootstrap.min.js}" type="text/javascript"></script>
+		
+		<link rel="stylesheet" th:href="@{/bootstrap-3.3.7-dist/css/bootstrap.min.css}" type="text/css" />
+		<link rel="stylesheet" th:href="@{/css/add_modify.css}" type="text/css" />
+	</head>
+	<body>
+		<nav class="navbar navbar-default">
+			<div class="container-fluid">
+				<!-- Brand and toggle get grouped for better mobile display -->
+				<div class="navbar-header">
+					<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1"
+					 aria-expanded="false">
+						<span class="sr-only">Toggle navigation</span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+					</button>
+					<a class="navbar-brand" th:href="@{/main}">Sheep Mall</a>
+				</div>
+
+				<!-- Collect the nav links, forms, and other content for toggling -->
+				<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+					<ul class="nav navbar-nav">
+						<li class="active"><a th:href="@{/main}">首页 <span class="sr-only">(current)</span></a></li>
+						<li><a id="goods">商品</a></li>
+						<li><a th:href="@{/showFabric}">fabric</a></li>
+					</ul>
+					<ul class="nav navbar-nav navbar-right">
+						<li class="dropdown">
+							<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">个人中心
+								<span class="caret"></span></a>
+							<ul class="dropdown-menu">
+								<li><a href="#">个人资料</a></li>
+								<li role="separator" class="divider"></li>
+								<li><a th:href="@{/index}">退出登录</a></li>
+							</ul>
+						</li>
+					</ul>
+				</div><!-- /.navbar-collapse -->
+
+			</div><!-- /.container-fluid -->
+		</nav>
+		<div class="container-fluid">
+
+			<div class="row title">
+				<div class="col-xs-2">
+					<span class="title_word">商品&nbsp;&nbsp;新增/修改</span>
+				</div>
+				<div class="col-xs-7">
+				</div>
+				<div class="col-xs-1" style="text-align: right;">
+					<a href="#"><button class="btn btn-primary btn-default">保存</button></a>
+				</div>
+				<div class="col-xs-1" style="text-align: left;">
+					<button class="btn btn-default" onclick="javascript:history.back(-1);">返回</button>
+				</div>
+				<div class="col-xs-1">
+				</div>
+			</div>
+
+			<div class="row goodsForm">
+				<form>
+					<div class="form-group col-xs-3">
+						<label for="id">ID</label>
+						<input type="text" disabled="disabled" class="form-control" id="exampleInputEmail1" placeholder="ID">
+					</div>
+					<div class="form-group col-xs-3">
+						<label for="name">Name</label>
+						<input type="text" class="form-control" id="name" placeholder="NAME">
+					</div>
+					<div class="form-group col-xs-3">
+						<label for="price">Price</label>
+						<input type="text" class="form-control" id="price" placeholder="PRICE">
+					</div>
+					<div class="form-group col-xs-3">
+						<label for="registerDate">Register Date</label>
+						<input type="date" class="form-control" id="registerDate" placeholder="Register Date">
+					</div>
+					<div class="col-xs-2"></div>
+				</form>
+			</div>
+
+			<hr />
+
+			<div class="row title">
+				<div class="col-xs-2">
+					<span class="title_word">物流信息</span>
+				</div>
+				<div class="col-xs-8">
+				</div>
+				<div class="col-xs-1" style="text-align: left;">
+					<button type="button" class="btn btn-primary btn-default" data-toggle="modal" data-target="#myModal">
+						新增
+					</button>
+				</div>
+				<div class="col-xs-1">
+				</div>
+			</div>
+
+			<div class="row goodsList" data-example-id="striped-table">
+				<table class="table table-striped">
+					<thead>
+						<tr>
+							<th class="col-xs-1">#</th>
+							<th class="col-xs-2">物流编号 ID</th>
+							<th class="col-xs-2">城市名称 Name</th>
+							<th class="col-xs-7">hash</th>
+						</tr>
+					</thead>
+					<tbody>
+						<div th:if="${logisticInfo != null}" th:each="logistic,start : ${logisticInfo}">
+							<tr>
+								<th class="col-xs-1" th:text="${start}">num</th>
+								<td class="col-xs-2" th:text="${logistic.id}">id</td>
+								<td class="col-xs-2" th:text="${logistic.cityName}">cityName</td>
+								<td class="col-xs-7" th:text="${logistic.hash}">hash</td>
+							</tr>
+						</div>
+					</tbody>
+				</table>
+			</div><!-- /example -->
+
+		</div>
+
+		<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title">新增物流信息</h4>
+					</div>
+					<!-- <div class="modal-body"> -->
+						<form>
+							<div class="form-group col-xs-12" hidden="hidden">
+								<label for="goodsId">GoodsID</label>
+								<input type="text" disabled="disabled" class="form-control" id="goodsId" placeholder="ID">
+							</div>
+							<div class="form-group col-xs-12">
+								<label for="cityName">CityName</label>
+								<input type="text" class="form-control" id="cityName" placeholder="CITYNAME">
+							</div>
+						</form>
+					<!-- </div> -->
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+						<button type="button" class="btn btn-primary" data-dismiss="modal">确定</button>
+					</div>
+				</div><!-- /.modal-content -->
+			</div><!-- /.modal-dialog -->
+		</div><!-- /.modal -->
+
+	</body>
+	
+	<script th:inline="javascript">
+		$(document).ready(function(){
+			$("#goods").click(function(){
+				$.ajax({
+				       url:"/goods/findAll",
+				       data:{},
+				       dataType:"json",
+				       type:"post",
+				       success:function (data) {
+				    		window.location.href="/showGoods";
+				       },
+				       error:function(data){
+				   			lert("Connecte timeout"); 
+				       }
+				   });
+			});
+		});
+	</script>
+	
+</html>

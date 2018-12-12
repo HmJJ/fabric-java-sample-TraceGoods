@@ -12,22 +12,24 @@ import com.springboot.basic.support.CommonRequestAttributes;
 import com.springboot.basic.support.CommonResponse;
 import com.springboot.fabric.interactive.service.SimpleService;
 
+@Service(value = "logisticService")
+public class LogisticService {
 
-/**
- * @author nott
- * @version 创建时间：2018年12月12日上午11:21:16 类说明
- */
-@Service(value = "goodsService")
-public class GoodsService {
-	
 	@Autowired private SimpleService simpleService;
 
+	/**
+	 * @param attributes
+	 * @param id
+	 * @param goodsId
+	 * @param cityName
+	 * @return
+	 */
 	public CommonResponse add(CommonRequestAttributes attributes, List<String> params) {
-		
+
 		CommonResponse retval = new CommonResponse(false);
 		Map<String, Object> map = new HashMap<>();
 		map.put("type", "invoke");
-		map.put("fcn", "addGoods");
+		map.put("fcn", "addLogistic");
 
 		int length = params.size();
         String[] argArray = new String[length];
@@ -53,7 +55,7 @@ public class GoodsService {
 		CommonResponse retval = new CommonResponse(false);
 		Map<String, Object> map = new HashMap<>();
 		map.put("type", "query");
-		map.put("fcn", "queryAllGoods");
+		map.put("fcn", "queryAllLogistic");
 		map.put("array", new String[] {});
 		//链中执行
 		String jsonStr=simpleService.chainCode(new JSONObject(map));
@@ -63,44 +65,21 @@ public class GoodsService {
 		retval.setData(jsonStr);
 		retval.setMessage("查询成功!");
 		retval.setResult(true);
-		
-		return retval;
-		
-	}
-	
-	public CommonResponse findById(CommonRequestAttributes attributes, List<String> params) {
-
-		CommonResponse retval = new CommonResponse(false);
-		Map<String, Object> map = new HashMap<>();
-		map.put("type", "query");
-		map.put("fcn", "queryGoodsById");
-		
-		int length = params.size();
-        String[] argArray = new String[length];
-        for (int i = 0; i < length; i++) {
-            argArray[i] = params.get(i);
-        }
-		
-		map.put("array", argArray);
-		//链中执行
-		String jsonStr=simpleService.chainCode(new JSONObject(map));
-		
-		System.out.println(jsonStr);
-		
-		retval.setData(jsonStr);
-		retval.setMessage("查询成功!");
-		retval.setResult(true);
-		
 		return retval;
 		
 	}
 
+	/**
+	 * @param pageNum
+	 * @param pageSize
+	 * @return
+	 */
 	public CommonResponse findByPage(CommonRequestAttributes attributes, List<String> params) {
 
 		CommonResponse retval = new CommonResponse(false);
 		Map<String, Object> map = new HashMap<>();
 		map.put("type", "query");
-		map.put("fcn", "queryGoodsByPage");
+		map.put("fcn", "queryLogisticByPage");
 
 		int length = params.size();
         String[] argArray = new String[length];
@@ -115,45 +94,22 @@ public class GoodsService {
 		System.out.println(jsonStr);
 		
 		retval.setData(jsonStr);
-		retval.setMessage("分页查询成功!");
-		retval.setResult(true);
-		
-		return retval;
-		
-	}
-
-	public CommonResponse modify(CommonRequestAttributes attributes, List<String> params) {
-		
-		CommonResponse retval = new CommonResponse(false);
-		Map<String, Object> map = new HashMap<>();
-		map.put("type", "invoke");
-		map.put("fcn", "modifyGoods");
-
-		int length = params.size();
-        String[] argArray = new String[length];
-        for (int i = 0; i < length; i++) {
-            argArray[i] = params.get(i);
-        }
-		
-		map.put("array", argArray);
-		//链中执行
-		String jsonStr=simpleService.chainCode(new JSONObject(map));
-		
-		System.out.println(jsonStr);
-		
-		retval.setData(jsonStr);
-		retval.setMessage("修改成功!");
+		retval.setMessage("分页查找成功!");
 		retval.setResult(true);
 		return retval;
 		
 	}
 
+	/**
+	 * @param id
+	 * @return
+	 */
 	public CommonResponse delete(CommonRequestAttributes attributes, List<String> params) {
 
 		CommonResponse retval = new CommonResponse(false);
 		Map<String, Object> map = new HashMap<>();
 		map.put("type", "invoke");
-		map.put("fcn", "deleteGoods");
+		map.put("fcn", "deleteLogistic");
 
 		int length = params.size();
         String[] argArray = new String[length];
@@ -173,5 +129,5 @@ public class GoodsService {
 		return retval;
 		
 	}
-
+	
 }

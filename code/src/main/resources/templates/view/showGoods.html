@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:v-on="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org"
+	xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3"
+	xmlns:layout="http://www.ultraq.net.nz/web/thymeleaf/layout"
+	th:remove="tag">
+	<head>
+		<title>INDEX</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<meta name="viewport" content="width=device-width,height=device-height,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+		
+		<script th:src="@{/jquery-3.3.1/jquery-3.3.1.min.js}" type="text/javascript"></script>
+		<script th:src="@{/bootstrap-3.3.7-dist/js/bootstrap.min.js}" type="text/javascript"></script>
+		
+		<link rel="stylesheet" th:href="@{/bootstrap-3.3.7-dist/css/bootstrap.min.css}" type="text/css" />
+		<link rel="stylesheet" th:href="@{/css/showGoods.css}" type="text/css" />
+	</head>
+	<body>
+		<nav class="navbar navbar-default">
+			<div class="container-fluid">
+				<!-- Brand and toggle get grouped for better mobile display -->
+				<div class="navbar-header">
+					<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1"
+					 aria-expanded="false">
+						<span class="sr-only">Toggle navigation</span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+					</button>
+					<a class="navbar-brand" th:href="@{/main}">Sheep Mall</a>
+				</div>
+
+				<!-- Collect the nav links, forms, and other content for toggling -->
+				<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+					<ul class="nav navbar-nav">
+						<li class="active"><a th:href="@{/main}">首页 <span class="sr-only">(current)</span></a></li>
+						<li><a th:href="@{/showGoods}">商品</a></li>
+						<li><a th:href="@{/showFabric}">fabric</a></li>
+					</ul>
+					<ul class="nav navbar-nav navbar-right">
+						<li class="dropdown">
+							<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">个人中心
+								<span class="caret"></span></a>
+							<ul class="dropdown-menu">
+								<li><a href="#">个人资料</a></li>
+								<li role="separator" class="divider"></li>
+								<li><a th:href="@{/index}">退出登录</a></li>
+							</ul>
+						</li>
+					</ul>
+				</div><!-- /.navbar-collapse -->
+
+			</div><!-- /.container-fluid -->
+		</nav>
+		<div class="container-fluid">
+
+			<div class="row title">
+				<div class="col-xs-2">
+					<span class="title_word">商品一览</span>
+				</div>
+				<div class="col-xs-7">
+				</div>
+				<div class="col-xs-1" style="text-align: right;">
+					<a th:href="@{/addModify}"><button class="btn btn-default">新增</button></a>
+				</div>
+				<div class="col-xs-1" style="text-align: left;">
+					<button class="btn btn-default" onclick="javascript:history.back(-1);">返回</button>
+				</div>
+				<div class="col-xs-1">
+				</div>
+			</div>
+
+			<div class="row goodsList" data-example-id="striped-table">
+				<table class="table table-striped">
+					<thead>
+						<tr>
+							<th class="col-xs-2">#</th>
+							<th class="col-xs-2">商品编号 ID</th>
+							<th class="col-xs-2">商品名称 Name</th>
+							<th class="col-xs-2">商品价格 Price</th>
+							<th class="col-xs-2">添加日期 Register Date</th>
+							<th class="col-xs-2">#</th>
+						</tr>
+					</thead>
+					<tbody>
+						<div th:if="${goodsInfo != null}" th:each="goods,start : ${goodsInfo}">
+							<tr>
+								<th class="col-xs-2" th:text="${start}">num</th>
+								<td class="col-xs-2" th:text="${goods.id}">id</td>
+								<td class="col-xs-2" th:text="${goods.name}">name</td>
+								<td class="col-xs-2" th:text="${goods.price}">price</td>
+								<td class="col-xs-2" th:text="${goods.registerDate}">registerDate</td>
+								<td class="col-xs-2"><button class="btn btn-sm btn-info detail">详情</button></td>
+							</tr>
+						</div>
+					</tbody>
+				</table>
+			</div><!-- /example -->
+
+			<nav aria-label="Page navigation" style="text-align: center;">
+				<ul class="pagination">
+					<li>
+						<a href="#" aria-label="Previous">
+							<span aria-hidden="true">&laquo;</span>
+						</a>
+					</li>
+					<div th:if="${pageNum != null}" th:each="pn,start : ${pageNum}">
+						<li><a href="#" th:text="start"></a></li>
+					</div>
+					<li>
+						<a href="#" aria-label="Next">
+							<span aria-hidden="true">&raquo;</span>
+						</a>
+					</li>
+				</ul>
+			</nav>
+
+		</div>
+
+	</body>
+	
+	<script th:inline="javascript">
+		$(document).ready(function(){
+			$(".detail").click(function(){
+				$.ajax({
+				       url:"/goods/findById",
+				       data:{
+				    	   id: ""
+				       },
+				       dataType:"json",
+				       type:"post",
+				       success:function (data) {
+				    		window.location.href="/addModify";
+				       },
+				       error:function(data){
+				   			lert("Connecte timeout"); 
+				       }
+				   });
+			});
+		});
+	</script>
+	
+</html>

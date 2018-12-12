@@ -1,23 +1,32 @@
 <!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>INDEX PAGE</title>
-</head>
-<style>
-body {
-	text-align:center;
-}
-.main {
-	margin-top:15%;
-}
-#greet {
-	font-size:30px;
-}
-</style>
-<body>
-	<div class="main">
-		<div id="greet">Hello World ~</div>
-	</div>
-</body>
+<html lang="zh-CN" xmlns:v-on="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org"
+	xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3"
+	xmlns:layout="http://www.ultraq.net.nz/web/thymeleaf/layout"
+	th:remove="tag">
+	<head>
+		<title>INDEX</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<meta name="viewport" content="width=device-width,height=device-height,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+		
+		<script th:src="@{/jquery-3.3.1/jquery-3.3.1.min.js}" type="text/javascript"></script>
+		<script th:src="@{/bootstrap-3.3.7-dist/js/bootstrap.min.js}" type="text/javascript"></script>
+		
+		<link rel="stylesheet" th:href="@{/bootstrap-3.3.7-dist/css/bootstrap.min.css}" type="text/css" />
+		<link rel="stylesheet" th:href="@{/css/index.css}" type="text/css" />
+	</head>
+	<body>
+		<div class="container-fluid main_view">
+			<div class="entrance">
+				<button class="btn btn-lg btn-success enter">进入系统</button>
+			</div>
+		</div>
+	</body>
+	
+	<script type="text/javascript" th:inline="javascript">
+		$(".enter").click(function(){
+			window.location.href="/main";
+		});
+	</script>
+			
 </html>

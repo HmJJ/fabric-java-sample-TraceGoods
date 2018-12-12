@@ -11,19 +11,29 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Controller
 public class IndexController {
 	
-	@RequestMapping(value= {"/",""})
-	public String index() {
+	@RequestMapping(value= {"/","","index"})
+	public String indexPage() {
 		return "index";
 	}
 	
-	@RequestMapping(value= "GOODS")
+	@RequestMapping(value= "main")
+	public String mainPage() {
+		return "/view/main";
+	}
+	
+	@RequestMapping(value= "showGoods")
 	public String goodsPage() {
-		return "index";
+		return "/view/showGoods";
 	}
 	
-	@RequestMapping(value= "TRACE")
+	@RequestMapping(value= "addModify")
+	public String addModify() {
+		return "/view/add_modify_goods";
+	}
+	
+	@RequestMapping(value= "showFabric")
 	public String tracePage() {
-		return "index";
+		return "/view/showFabric";
 	}
 	
 }
