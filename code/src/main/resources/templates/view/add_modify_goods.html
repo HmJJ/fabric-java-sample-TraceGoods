@@ -33,8 +33,8 @@
 				<!-- Collect the nav links, forms, and other content for toggling -->
 				<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
 					<ul class="nav navbar-nav">
-						<li class="active"><a th:href="@{/main}">首页 <span class="sr-only">(current)</span></a></li>
-						<li><a id="goods">商品</a></li>
+						<li><a th:href="@{/main}">首页 <span class="sr-only">(current)</span></a></li>
+						<li><a th:href="@{/showGoods}">商品</a></li>
 						<li><a th:href="@{/showFabric}">fabric</a></li>
 					</ul>
 					<ul class="nav navbar-nav navbar-right">
@@ -72,21 +72,21 @@
 
 			<div class="row">
 				<form id="goodsForm">
-					<div class="form-group col-xs-3">
-						<label for="id">ID</label>
-						<input type="text" disabled="disabled" class="form-control" id="id" placeholder="ID" th:value="${id}">
+					<div class="col-xs-3">
+						<label>ID</label>
+						<input type="text" readonly="readonly" class="form-control" id="id" name="id" placeholder="ID" th:value="${id}">
 					</div>
-					<div class="form-group col-xs-3">
-						<label for="name">Name</label>
-						<input type="text" class="form-control" id="name" placeholder="NAME" th:text="${name}">
+					<div class="col-xs-3">
+						<label>Name</label>
+						<input type="text" class="form-control" id="name" name="name" placeholder="NAME" th:text="${name}">
 					</div>
-					<div class="form-group col-xs-3">
-						<label for="price">Price (￥)</label>
-						<input type="text" class="form-control" id="price" placeholder="PRICE" th:text="${price}">
+					<div class="col-xs-3">
+						<label>Price (￥)</label>
+						<input type="text" class="form-control" id="price" name="price" placeholder="PRICE" th:text="${price}">
 					</div>
-					<div class="form-group col-xs-3">
-						<label for="registerDate">Register Date</label>
-						<input type="date" class="form-control" id="registerDate" th:text="${registerDate}">
+					<div class="col-xs-3">
+						<label>Register Date</label>
+						<input type="date" class="form-control" id="registerDate" name="registerDate" th:text="${registerDate}">
 					</div>
 					<div class="col-xs-2"></div>
 				</form>
@@ -144,12 +144,16 @@
 					<!-- <div class="modal-body"> -->
 						<form>
 							<div class="form-group col-xs-12" hidden="hidden">
+								<label for="id">ID</label>
+								<input type="text" class="form-control" id="id" name="id" placeholder="ID">
+							</div>
+							<div class="form-group col-xs-12" hidden="hidden">
 								<label for="goodsId">GoodsID</label>
-								<input type="text" disabled="disabled" class="form-control" id="goodsId" placeholder="ID">
+								<input type="text" class="form-control" id="goodsId" name="goodsId" placeholder="ID">
 							</div>
 							<div class="form-group col-xs-12">
 								<label for="cityName">CityName</label>
-								<input type="text" class="form-control" id="cityName" placeholder="CITYNAME">
+								<input type="text" class="form-control" id="cityName" name="cityName" placeholder="CITYNAME">
 							</div>
 						</form>
 					<!-- </div> -->
@@ -171,29 +175,27 @@
 				$(".logistic_add").attr("disabled", true);
 			}
 			
-			$("#goods").click(function(){
-				$.ajax({
-				       url:"/goods/findAll",
-				       data:{},
-				       dataType:"json",
-				       type:"post",
-				       success:function (data) {
-				    		window.location.href="/showGoods";
-				       },
-				       error:function(data){
-				   			lert("Connecte timeout"); 
-				       }
-				   });
-			});
 			$(".goods_save").click(function(){
 				
-				alert($("#goodsForm").serialize());
+				var id = $("#id").val();
+				var name = $("#name").val();
+				var price = $("#price").val();
+				var registerDate = $("#registerDate").val();
+				if(!name || !price || !registerDate) {
+					alert("请完善参数.");
+					return;
+				}
 				
 				$.ajax({
-				       url:"/goods/add",
-				       data:$("#goodsForm").serialize(),
+				       type: "POST",
 				       dataType:"json",
-				       type:"post",
+				       url:"/goods/add",
+				       data:{
+				    	   id: id,
+				    	   name: name,
+				    	   price: price,
+				    	   registerDate: registerDate
+				       },
 				       success:function (data) {
 				    	   if(data.result) {
 				    		   alert("save success");
@@ -209,10 +211,10 @@
 			});
 			$(".logistic_save").click(function(){
 				$.ajax({
-				       url:"/goods/add",
-				       data:$(".goodsForm").serialize(),
+						type:"post",
 				       dataType:"json",
-				       type:"post",
+				       url:"/logistic/add",
+				       data:$("#goodsForm").serialize(),
 				       success:function (data) {
 				    	   if(data.result) {
 				    		   alert("save success");

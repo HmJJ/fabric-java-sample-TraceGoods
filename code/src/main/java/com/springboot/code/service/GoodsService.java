@@ -39,10 +39,18 @@ public class GoodsService {
 		//链中执行
 		String jsonStr=simpleService.chainCode(new JSONObject(map));
 		
-		System.out.println(jsonStr);
+		JSONObject result = JSONObject.parseObject(jsonStr);
 		
-		retval.setData(jsonStr);
-		retval.setMessage("添加成功!");
+		if ((int)result.get("status") != 200) {
+			retval.setMessage("添加失败!");
+		} else {
+			retval.setMessage("添加成功!");
+		}
+		
+		System.out.println(result);
+		
+		retval.setData(result);
+		
 		retval.setResult(true);
 		return retval;
 		

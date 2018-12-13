@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 	"encoding/json"
+	"strings"
 
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
@@ -158,7 +159,7 @@ func (t *TraceChaincode)addLogistic(stub shim.ChaincodeStubInterface, args []str
 	var id, goodsId, cityName string
 	var err error
 
-	if len(args) != 2 {
+	if len(args) != 3 {
 		return shim.Error("Incorrect number of arguments. Expecting name of the person to query")
 	}
 
@@ -182,6 +183,9 @@ func (t *TraceChaincode)addLogistic(stub shim.ChaincodeStubInterface, args []str
 	logisticIds = goods_logistics[goodsId]
 	logisticIds = append(logisticIds, id)
 	goods_logistics[id] = logisticIds
+
+	justString := strings.Join(logisticIds," ")
+	fmt.Println("商品对应的所有物流信息："+justString)
 
 	var data [2]string
 	data[0] = "添加物流信息成功"
@@ -231,9 +235,12 @@ func (t *TraceChaincode) invoke(stub shim.ChaincodeStubInterface, args []string)
 /* 查看所有商品信息 */
 func (t *TraceChaincode) queryAllGoods(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	var data [2]string
-	var goodsInfos []byte
+	var goodsInfos []string
 
-	for i := 0; i < len(goodsIds); i++ {
+	justString := strings.Join(goodsIds," ")
+	fmt.Printf("所有商品的id："+justString)
+
+	for i := 0; i < len(goodsIds) - 1; i++ {
 		// Get the state from the ledger
 		goodsbytes, err := stub.GetState(goodsIds[i])
 		if err != nil {
@@ -247,6 +254,11 @@ func (t *TraceChaincode) queryAllGoods(stub shim.ChaincodeStubInterface, args []
 		}
 
 		goodsInfos = append(goodsInfos, goodsbytes...)
+
+		j := strconv.Itoa(i)
+
+		fmt.Println("第"+j+"个商品的信息："+string(goodsbytes))
+		fmt.Println("所有商品的信息："+string(goodsInfos))
 	}
 
 	
@@ -314,6 +326,9 @@ func (t *TraceChaincode) queryGoodsByPage(stub shim.ChaincodeStubInterface, args
 		end = len(goodsIds) - 1
 	}
 
+	justString := strings.Join(goodsIds," ")
+	fmt.Println("商品列表："+justString)
+
 	for i := start; i < end; i++ {
 		id = goodsIds[i]
 
@@ -330,6 +345,9 @@ func (t *TraceChaincode) queryGoodsByPage(stub shim.ChaincodeStubInterface, args
 		}
 
 		goodsInfos = append(goodsInfos, goodsbytes...)
+
+		fmt.Println("商品信息："+string(goodsbytes))
+		fmt.Println("所有商品信息："+string(goodsInfos))
 	}
 
 	
@@ -355,7 +373,7 @@ func (t *TraceChaincode) queryAllLogistic(stub shim.ChaincodeStubInterface, args
 	var logisticInfos []byte
 	logisticIds := goods_logistics[goodsId]
 
-	for i := 0; i < len(logisticIds); i++ {
+	for i := 0; i < len(logisticIds) - 1; i++ {
 		// Get the state from the ledger
 		logisticbytes, err := stub.GetState(logisticIds[i])
 		if err != nil {

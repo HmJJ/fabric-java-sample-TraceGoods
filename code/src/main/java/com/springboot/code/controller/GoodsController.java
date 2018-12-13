@@ -1,5 +1,6 @@
 package com.springboot.code.controller;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,6 +17,7 @@ import com.springboot.basic.support.CommonRequestAttributes;
 import com.springboot.basic.support.CommonResponse;
 import com.springboot.basic.utils.StringUtils;
 import com.springboot.basic.utils.Uuid;
+import com.springboot.basic.utils.time.DateUtils;
 import com.springboot.code.entity.Goods;
 import com.springboot.code.service.GoodsService;
 
@@ -31,24 +33,34 @@ public class GoodsController {
 	
 	@Autowired private GoodsService goodsService;
 	
-	@RequestMapping(value = "add")
+	@RequestMapping("add")
 	@ResponseBody
-	public String add(CommonRequestAttributes attributes, @RequestBody Goods entity) {
+	public String add(CommonRequestAttributes attributes,
+			@RequestParam(value="id", required=false) String id,
+			@RequestParam(value="name") String name,
+			@RequestParam(value="price") String price,
+			@RequestParam(value="registerDate") String registerDate) {
 		CommonResponse retval = new CommonResponse();
 		
-		if(StringUtils.isBlank(entity.getName()) || StringUtils.isBlank(entity.getPrice()) 
-				|| entity.getRegisterDate() == null) {
+		if(StringUtils.isBlank(name) || StringUtils.isBlank(price) 
+				|| StringUtils.isBlank(registerDate)) {
 			retval.setCode("200");
 			retval.setMessage("参数为空");
 		}
 		
 		List<String> params = new ArrayList<>();
-		if(StringUtils.isBlank(entity.getId())) {			
+		if(StringUtils.isBlank(id)) {			
 			params.add(Uuid.getUUID());
 		}
-		params.add(entity.getName());
-		params.add(entity.getPrice());
-		params.add(entity.getRegisterDate());
+		params.add(name);
+		params.add(price);
+		try {
+			registerDate = DateUtils.format(registerDate, "yyyy/MM/dd");
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		params.add(registerDate);
 		retval = goodsService.add(attributes, params);
 		
 		return JSON.toJSONString(retval);

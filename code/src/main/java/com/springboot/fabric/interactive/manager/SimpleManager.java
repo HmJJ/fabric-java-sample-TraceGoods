@@ -68,7 +68,7 @@ public class SimpleManager extends BaseManager {
             logger.debug(map.get("data"));
         })
         .add();
-        return orgManager.use("Org1");
+        return orgManager2.use("Org1");
     }
 
 }

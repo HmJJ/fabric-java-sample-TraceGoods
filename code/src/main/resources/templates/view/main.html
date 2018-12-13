@@ -32,8 +32,8 @@
 				<!-- Collect the nav links, forms, and other content for toggling -->
 				<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
 					<ul class="nav navbar-nav">
-						<li class="active"><a th:href="@{/main}">首页 <span class="sr-only">(current)</span></a></li>
-						<li><a id="goods">商品</a></li>
+						<li><a th:href="@{/main}">首页 <span class="sr-only">(current)</span></a></li>
+						<li><a th:href="@{/showGoods}" id="goods">商品</a></li>
 						<li><a th:href="@{/showFabric}">fabric</a></li>
 					</ul>
 					<ul class="nav navbar-nav navbar-right">
@@ -71,20 +71,6 @@
 	
 	<script th:inline="javascript">
 		$(document).ready(function(){
-			$("#goods").click(function(){
-				$.ajax({
-				       url:"/goods/findAll",
-				       data:{},
-				       dataType:"json",
-				       type:"post",
-				       success:function (data) {
-				    		window.location.href="/showGoods";
-				       },
-				       error:function(data){
-				   			lert("Connecte timeout"); 
-				       }
-				   });
-			});
 		});
 	</script>
 	
