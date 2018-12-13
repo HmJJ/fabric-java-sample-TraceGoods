@@ -2,7 +2,15 @@
 存数据不能存中文
 docker exec -it cli bash
 
-peer chaincode install -n tracegoods -p github.com/hyperledger/fabric/aberic/chaincode/go/trace_goods -v 1.0
+创建一个channel
+peer channel create -o orderer.example.com:7050 -c mychannel  -f ./channel-artifacts/mychannel.tx
+或者
+peer channel create -o orderer.example.com:7050 -c mychannel -t 50 -f ./channel-artifacts/mychannel.tx
+
+通过mychannel.block文件来加入该channel
+peer channel join -b mychannel.block
+
+peer chaincode install -n tracegoods -p github.com/hyperledger/fabric/sheep/chaincode/go/trace_goods -v 1.0
 
 peer chaincode instantiate -o orderer.example.com:7050 -C mychannel -n tracegoods -c '{"Args":["init"]}' -P "OR ('Org1MSP.member')" -v 1.0
 
@@ -11,6 +19,8 @@ peer chaincode invoke -C mychannel -n tracegoods -c '{"Args":["addGoods","goods_
 peer chaincode query -C mychannel -n tracegoods -c '{"Args":["queryGoodsById","goods_001"]}'
 
 peer chaincode query -C mychannel -n tracegoods -c '{"Args":["queryAllGoods"]}'
+
+peer chaincode query -C mychannel -n tracegoods -c '{"Args":["queryGoodsByPage","1","1"]}'
 
 peer chaincode invoke -C mychannel -n tracegoods -c '{"Args":["addLogistic","logistic_PS4_001","goods_001","America"]}'
 peer chaincode invoke -C mychannel -n tracegoods -c '{"Args":["addLogistic","logistic_PS4_002","goods_001","HongKong"]}'
