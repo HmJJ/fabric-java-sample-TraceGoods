@@ -16,8 +16,8 @@ import com.springboot.basic.support.CommonRequestAttributes;
 import com.springboot.basic.support.CommonResponse;
 import com.springboot.basic.utils.StringUtils;
 import com.springboot.basic.utils.Uuid;
-import com.springboot.code.entity.Goods;
-import com.springboot.code.service.GoodsService;
+import com.springboot.code.entity.Logistic;
+import com.springboot.code.service.LogisticService;
 
 /**
 * @author nott
@@ -26,52 +26,45 @@ import com.springboot.code.service.GoodsService;
 */
 
 @Controller
-@RequestMapping("goods")
-public class GoodsController {
+@RequestMapping("logistic")
+public class LogisticController {
 	
-	@Autowired private GoodsService goodsService;
+	@Autowired private LogisticService logisticService;
 	
 	@RequestMapping(value = "add")
 	@ResponseBody
-	public String add(CommonRequestAttributes attributes, @RequestBody Goods entity) {
+	public String add(CommonRequestAttributes attributes, @RequestBody Logistic entity) {
 		CommonResponse retval = new CommonResponse();
 		
-		if(StringUtils.isBlank(entity.getName()) || StringUtils.isBlank(entity.getPrice()) 
-				|| entity.getRegisterDate() == null) {
+		if(StringUtils.isBlank(entity.getGoodsId()) || StringUtils.isBlank(entity.getCityName())) {
 			retval.setCode("200");
 			retval.setMessage("参数为空");
 		}
 		
 		List<String> params = new ArrayList<>();
-		if(StringUtils.isBlank(entity.getId())) {			
-			params.add(Uuid.getUUID());
-		}
-		params.add(entity.getName());
-		params.add(entity.getPrice());
-		params.add(entity.getRegisterDate());
-		retval = goodsService.add(attributes, params);
+		params.add(Uuid.getUUID());
+		params.add(entity.getGoodsId());
+		params.add(entity.getCityName());
+		retval = logisticService.add(attributes, params);
 		
 		return JSON.toJSONString(retval);
 	}
 	
 	@RequestMapping(value = "modify")
 	@ResponseBody
-	public String modify(CommonRequestAttributes attributes, @RequestBody Goods entity) {
+	public String modify(CommonRequestAttributes attributes, @RequestBody Logistic entity) {
 		CommonResponse retval = new CommonResponse();
 		
-		if(StringUtils.isBlank(entity.getId()) || StringUtils.isBlank(entity.getName()) 
-				|| StringUtils.isBlank(entity.getPrice()) 
-				|| entity.getRegisterDate() == null) {
+		if(StringUtils.isBlank(entity.getGoodsId()) || StringUtils.isBlank(entity.getCityName())) {
 			retval.setCode("200");
 			retval.setMessage("参数为空");
 		}
 		
 		List<String> params = new ArrayList<>();
 		params.add(entity.getId());
-		params.add(entity.getName());
-		params.add(entity.getPrice());
-		params.add(entity.getRegisterDate().toString());
-		retval = goodsService.modify(attributes, params);
+		params.add(entity.getGoodsId());
+		params.add(entity.getCityName());
+		retval = logisticService.modify(attributes, params);
 		
 		return JSON.toJSONString(retval);
 	}
@@ -81,25 +74,9 @@ public class GoodsController {
 	public String findAll(CommonRequestAttributes attributes, Model model) {
 		CommonResponse retval = new CommonResponse();
 		
-		retval = goodsService.findAll(attributes);
+		retval = logisticService.findAll(attributes);
 		
 		return JSON.toJSONString(retval);
-	}
-	
-	@RequestMapping(value = "findById")
-	public String findById(CommonRequestAttributes attributes, Model model, @RequestParam String id) {
-		CommonResponse retval = new CommonResponse();
-		
-		if(StringUtils.isBlank(id)) {
-			retval.setCode("200");
-			retval.setMessage("参数为空");
-		}
-		
-		List<String> params = new ArrayList<>();
-		params.add(id);
-		retval = goodsService.modify(attributes, params);
-		
-		return "view/add_modify_goods";
 	}
 	
 	@RequestMapping(value = "findByPage")
@@ -116,7 +93,7 @@ public class GoodsController {
 		List<String> params = new ArrayList<>();
 		params.add(String.valueOf(pageNum));
 		params.add(String.valueOf(pageSize));
-		retval = goodsService.modify(attributes, params);
+		retval = logisticService.modify(attributes, params);
 		
 		return JSON.toJSONString(retval);
 		
@@ -135,7 +112,7 @@ public class GoodsController {
 
 		List<String> params = new ArrayList<>();
 		params.add(id);
-		retval = goodsService.modify(attributes, params);
+		retval = logisticService.modify(attributes, params);
 		
 		return JSON.toJSONString(retval);
 		

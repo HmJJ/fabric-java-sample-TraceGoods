@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 	"encoding/json"
+	"strings"
 
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
@@ -183,6 +184,9 @@ func (t *TraceChaincode)addLogistic(stub shim.ChaincodeStubInterface, args []str
 	logisticIds = append(logisticIds, id)
 	goods_logistics[id] = logisticIds
 
+	justString := strings.Join(logisticIds," ")
+	fmt.Println("商品对应的所有物流信息："+justString)
+
 	var data [2]string
 	data[0] = "添加物流信息成功"
 	data[1] = string(logisticbytes)
@@ -231,7 +235,10 @@ func (t *TraceChaincode) invoke(stub shim.ChaincodeStubInterface, args []string)
 /* 查看所有商品信息 */
 func (t *TraceChaincode) queryAllGoods(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	var data [2]string
-	var goodsInfos []byte
+	var goodsInfos []string
+
+	justString := strings.Join(goodsIds," ")
+	fmt.Printf("所有商品的id："+justString)
 
 	for i := 0; i < len(goodsIds) - 1; i++ {
 		// Get the state from the ledger
@@ -247,6 +254,11 @@ func (t *TraceChaincode) queryAllGoods(stub shim.ChaincodeStubInterface, args []
 		}
 
 		goodsInfos = append(goodsInfos, goodsbytes...)
+
+		j := strconv.Itoa(i)
+
+		fmt.Println("第"+j+"个商品的信息："+string(goodsbytes))
+		fmt.Println("所有商品的信息："+string(goodsInfos))
 	}
 
 	
@@ -314,6 +326,9 @@ func (t *TraceChaincode) queryGoodsByPage(stub shim.ChaincodeStubInterface, args
 		end = len(goodsIds) - 1
 	}
 
+	justString := strings.Join(goodsIds," ")
+	fmt.Println("商品列表："+justString)
+
 	for i := start; i < end; i++ {
 		id = goodsIds[i]
 
@@ -330,6 +345,9 @@ func (t *TraceChaincode) queryGoodsByPage(stub shim.ChaincodeStubInterface, args
 		}
 
 		goodsInfos = append(goodsInfos, goodsbytes...)
+
+		fmt.Println("商品信息："+string(goodsbytes))
+		fmt.Println("所有商品信息："+string(goodsInfos))
 	}
 
 	

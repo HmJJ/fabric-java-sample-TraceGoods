@@ -99,6 +99,33 @@ public class LogisticService {
 		return retval;
 		
 	}
+	
+
+	public CommonResponse modify(CommonRequestAttributes attributes, List<String> params) {
+		
+		CommonResponse retval = new CommonResponse(false);
+		Map<String, Object> map = new HashMap<>();
+		map.put("type", "invoke");
+		map.put("fcn", "modifyLogistic");
+
+		int length = params.size();
+        String[] argArray = new String[length];
+        for (int i = 0; i < length; i++) {
+            argArray[i] = params.get(i);
+        }
+		
+		map.put("array", argArray);
+		//链中执行
+		String jsonStr=simpleService.chainCode(new JSONObject(map));
+		
+		System.out.println(jsonStr);
+		
+		retval.setData(jsonStr);
+		retval.setMessage("修改成功!");
+		retval.setResult(true);
+		return retval;
+		
+	}
 
 	/**
 	 * @param id

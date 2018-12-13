@@ -90,7 +90,7 @@
 								<td class="col-xs-2" th:text="${goods.name}">name</td>
 								<td class="col-xs-2" th:text="${goods.price}">price</td>
 								<td class="col-xs-2" th:text="${goods.registerDate}">registerDate</td>
-								<td class="col-xs-2"><button class="btn btn-sm btn-info detail">详情</button></td>
+								<td class="col-xs-2"><a th:href="@{/addModify}"><button class="btn btn-sm btn-info">详情</button></a></td>
 							</tr>
 						</div>
 					</tbody>
@@ -121,22 +121,6 @@
 	
 	<script th:inline="javascript">
 		$(document).ready(function(){
-			$(".detail").click(function(){
-				$.ajax({
-				       url:"/goods/findById",
-				       data:{
-				    	   id: ""
-				       },
-				       dataType:"json",
-				       type:"post",
-				       success:function (data) {
-				    		window.location.href="/addModify";
-				       },
-				       error:function(data){
-				   			lert("Connecte timeout"); 
-				       }
-				   });
-			});
 		});
 	</script>
 	
