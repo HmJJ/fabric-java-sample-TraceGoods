@@ -56,9 +56,8 @@ public class GoodsService {
 		
 	}
 
-	public CommonResponse findAll(CommonRequestAttributes attributes) {
+	public JSONObject findAll(CommonRequestAttributes attributes) {
 
-		CommonResponse retval = new CommonResponse(false);
 		Map<String, Object> map = new HashMap<>();
 		map.put("type", "query");
 		map.put("fcn", "queryAllGoods");
@@ -66,13 +65,9 @@ public class GoodsService {
 		//链中执行
 		String jsonStr=simpleService.chainCode(new JSONObject(map));
 		
-		System.out.println(jsonStr);
+		JSONObject result = JSONObject.parseObject(jsonStr);
 		
-		retval.setData(jsonStr);
-		retval.setMessage("查询成功!");
-		retval.setResult(true);
-		
-		return retval;
+		return result;
 		
 	}
 	

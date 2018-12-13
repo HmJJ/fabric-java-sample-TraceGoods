@@ -88,16 +88,6 @@ public class GoodsController {
 		return JSON.toJSONString(retval);
 	}
 	
-	@RequestMapping(value = "findAll")
-	@ResponseBody
-	public String findAll(CommonRequestAttributes attributes, Model model) {
-		CommonResponse retval = new CommonResponse();
-		
-		retval = goodsService.findAll(attributes);
-		
-		return JSON.toJSONString(retval);
-	}
-	
 	@RequestMapping(value = "findById")
 	public String findById(CommonRequestAttributes attributes, Model model, @RequestParam String id) {
 		CommonResponse retval = new CommonResponse();

@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"strconv"
 	"encoding/json"
 	"strings"
 
@@ -15,25 +14,21 @@ type TraceChaincode struct {
 
 /* 定义商品实体 */
 type Goods struct {
-	Id string
-	Name string
-	Price string
-	RegisterDate string
+	Id string            //商品id
+	Name string          //商品名称
+	Price string         //商品价格
+	RegisterDate string  //生产日期
 }
 
 /* 定义物流实体 */
 type Logistic struct {
-	Id string
-	GoodsId string
-	CityName string
+	Id string            //物流id
+	GoodsId string       //商品id
+	CityName string      //城市名称
 }
 
-/* 商品对应的所有物流信息 */
-var goods_logistics = map[string][]string{}
-/* 所有商品 */
-var goodsIds []string
-/* 所有物流 */
-//var logistics = map[int]string{}
+/* 商品列表key */
+var goodsListKey = "sheep_goods_list"
 
 /* 合约初始化入口 */
 func (t *TraceChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response {
@@ -55,15 +50,6 @@ func (t *TraceChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	} else if function == "queryGoodsById" {
 		// the old "Query" is now implemtned in invoke
 		return t.queryGoodsById(stub, args)
-	} else if function == "queryGoodsByPage" {
-		// the old "Query" is now implemtned in invoke
-		return t.queryGoodsByPage(stub, args)
-	} else if function == "queryAllLogistic" {
-		// the old "Query" is now implemtned in invoke
-		return t.queryAllLogistic(stub, args)
-	} else if function == "queryLogisticByPage" {
-		// the old "Query" is now implemtned in invoke
-		return t.queryLogisticByPage(stub, args)
 	} else if function == "addGoods" {
 		return  t.addGoods(stub, args)
 	} else if function == "modifyGoods" {
@@ -109,13 +95,29 @@ func (t *TraceChaincode)addGoods(stub shim.ChaincodeStubInterface, args []string
 		return shim.Error(err.Error())
 	}
 
-	goodsIds = append(goodsIds, id)
-	var logisticIds []string
-	goods_logistics[id] = logisticIds
-
-	var data [2]string
+	var data [3]string
 	data[0] = "添加商品成功"
 	data[1] = string(goodsbytes)
+
+	var goodsIds []string
+	goodsIdsBytes, err := stub.GetState(goodsListKey)
+	if err != nil {
+		jsonResp := "{\"Error\":\"Failed to get state for " + goodsListKey + "\"}"
+		return shim.Error(jsonResp)
+	}
+
+	if goodsbytes != nil {
+		goodsIds = strings.Fields(string(goodsIdsBytes))
+	}
+
+	goodsIds = append(goodsIds, id)
+
+	newgoodsIdsBytes,_ := json.Marshal(goodsIds)
+	err = stub.PutState(goodsListKey, newgoodsIdsBytes)
+	if err != nil {
+		data[2] = err.Error()
+	}
+	
 	databytes,_ := json.Marshal(data)
 	return shim.Success(databytes)
 }
@@ -172,20 +174,17 @@ func (t *TraceChaincode)addLogistic(stub shim.ChaincodeStubInterface, args []str
 
 	// Write the state to the ledger
 	logistic := Logistic{Id:id, GoodsId:goodsId, CityName:cityName}
-	logisticbytes,_ := json.Marshal(logistic)
-	err = stub.PutState(id, logisticbytes)
+
+	key, err := stub.CreateCompositeKey("Goods~Logistic:", []string{goodsId, id})
 	if err != nil {
 		return shim.Error(err.Error())
 	}
 
-	//logistics[len(logistics)] = id
-	var logisticIds []string
-	logisticIds = goods_logistics[goodsId]
-	logisticIds = append(logisticIds, id)
-	goods_logistics[id] = logisticIds
-
-	justString := strings.Join(logisticIds," ")
-	fmt.Println("商品对应的所有物流信息："+justString)
+	logisticbytes,_ := json.Marshal(logistic)
+	err = stub.PutState(key, logisticbytes)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
 
 	var data [2]string
 	data[0] = "添加物流信息成功"
@@ -232,39 +231,56 @@ func (t *TraceChaincode) invoke(stub shim.ChaincodeStubInterface, args []string)
 	return shim.Success(nil)
 }
 
-/* 查看所有商品信息 */
-func (t *TraceChaincode) queryAllGoods(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	var data [2]string
-	var goodsInfos []string
+/* 查看 */
+func (t *TraceChaincode) query(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	var key string
 
-	justString := strings.Join(goodsIds," ")
-	fmt.Printf("所有商品的id："+justString)
+	key = args[0]
 
-	for i := 0; i < len(goodsIds) - 1; i++ {
-		// Get the state from the ledger
-		goodsbytes, err := stub.GetState(goodsIds[i])
-		if err != nil {
-			jsonResp := "{\"Error\":\"Failed to get state for " + goodsIds[i] + "\"}"
-			return shim.Error(jsonResp)
-		}
-
-		if goodsbytes == nil {
-			jsonResp := "{\"Error\":\"Nil amount for " + goodsIds[i] + "\"}"
-			return shim.Error(jsonResp)
-		}
-
-		goodsInfos = append(goodsInfos, goodsbytes...)
-
-		j := strconv.Itoa(i)
-
-		fmt.Println("第"+j+"个商品的信息："+string(goodsbytes))
-		fmt.Println("所有商品的信息："+string(goodsInfos))
+	keybytes, err := stub.GetState(key)
+	if err != nil {
+		shim.Error(err.Error())
 	}
 
-	
-
+	var data [2]string
 	data[0] = "查询成功"
-	data[1] = string(goodsInfos)
+	data[1] = string(keybytes)
+	databytes,_ := json.Marshal(data)
+
+	return shim.Success(databytes)
+}
+
+/* 查看所有商品信息 */
+func (t *TraceChaincode) queryAllGoods(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	goodsIdsBytes, err := stub.GetState(goodsListKey)
+	if err != nil {
+		shim.Error(err.Error())
+	}
+	
+	var goodsIds []string
+	goodsIdStr := string(goodsIdsBytes)
+
+	goodsIds = strings.Fields(goodsIdStr)
+
+	var goodsBytes []byte
+	for index, value := range goodsIds {
+		goodsIdbytes, err := stub.GetState(goodsIds[index])
+		if err != nil {
+			jsonResp := "{\"Error\":\"Failed to get state for " + value + "\"}"
+			return shim.Error(jsonResp)
+		}
+
+		if goodsBytes == nil {
+			jsonResp := "{\"Error\":\"Nil amount for " + value + "\"}"
+			return shim.Error(jsonResp)
+		}
+
+		goodsBytes = append(goodsBytes, goodsIdbytes...)
+	}
+
+	var data [2]string
+	data[0] = "查询成功"
+	data[1] = string(goodsBytes)
 	databytes,_ := json.Marshal(data)
 
 	return shim.Success(databytes)
@@ -281,175 +297,37 @@ func (t *TraceChaincode) queryGoodsById(stub shim.ChaincodeStubInterface, args [
 
 	id = args[0]
 
-	// Get the state from the ledger
-	goodsbytes, err := stub.GetState(id)
+	logisticsMap := []map[string]interface{}{}
+	resultIterator, err := stub.GetStateByPartialCompositeKey("Operat~Pro:", []string{id})
+	defer resultIterator.Close()
+	for resultIterator.HasNext() {
+		item, _ := resultIterator.Next()
+		fmt.Printf("key=%s\n", item.Key)
+		logisticJsonBytes, err := stub.GetState(item.Key)
+		if err != nil {
+			return shim.Error("Failed to get state")
+		}
+		logistic := Logistic{}
+	   	err  = json.Unmarshal(logisticJsonBytes, &logistic)
+		if err != nil {
+   			return shim.Error(err.Error())
+   		}
+
+
+		l := map[string]interface{}{"operation":logistic}
+	    logisticsMap = append(logisticsMap, l)
+	}
+	logisticJson, err := json.Marshal(logisticsMap)
 	if err != nil {
-		jsonResp := "{\"Error\":\"Failed to get state for " + id + "\"}"
-		return shim.Error(jsonResp)
-	}
-
-	if goodsbytes == nil {
-		jsonResp := "{\"Error\":\"Nil amount for " + id + "\"}"
-		return shim.Error(jsonResp)
+		shim.Error("Failed to decode json of productMap")
 	}
 
 	data[0] = "查询成功"
-	data[1] = string(goodsbytes)
+	data[1] = string(logisticJson)
 	databytes,_ := json.Marshal(data)
 
 	return shim.Success(databytes)
 }
-
-/* 分页查看商品信息 */
-func (t *TraceChaincode) queryGoodsByPage(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	var id string
-	var pageNum, pageSize, start, end int
-	var goodsInfos []byte
-	var data [2]string
-	var err error
-
-	if len(args) != 2 {
-		return shim.Error("Incorrect number of arguments. Expecting name of the person to query")
-	}
-
-	pageNum, err = strconv.Atoi(args[0])
-	if (err != nil) {
-		return shim.Error("string changeTo int error")
-	}
-	pageSize, err = strconv.Atoi(args[1])
-	if (err != nil) {
-		return shim.Error("string changeTo int error")
-	}
-	start = (pageNum-1) * pageSize
-	end = pageNum * pageSize - 1
-	if (end > len(goodsIds)) {
-		end = len(goodsIds) - 1
-	}
-
-	justString := strings.Join(goodsIds," ")
-	fmt.Println("商品列表："+justString)
-
-	for i := start; i < end; i++ {
-		id = goodsIds[i]
-
-		// Get the state from the ledger
-		goodsbytes, err := stub.GetState(id)
-		if err != nil {
-			jsonResp := "{\"Error\":\"Failed to get state for " + id + "\"}"
-			return shim.Error(jsonResp)
-		}
-
-		if goodsbytes == nil {
-			jsonResp := "{\"Error\":\"Nil amount for " + id + "\"}"
-			return shim.Error(jsonResp)
-		}
-
-		goodsInfos = append(goodsInfos, goodsbytes...)
-
-		fmt.Println("商品信息："+string(goodsbytes))
-		fmt.Println("所有商品信息："+string(goodsInfos))
-	}
-
-	
-
-	data[0] = "查询成功"
-	data[1] = string(goodsInfos)
-	databytes,_ := json.Marshal(data)
-
-	return shim.Success(databytes)
-}
-
-/* 查看某商品的所有物流信息 */
-func (t *TraceChaincode) queryAllLogistic(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	var goodsId string
-	var data [2]string
-
-	if len(args) != 1 {
-		return shim.Error("Incorrect number of arguments. Expecting name of the person to query")
-	}
-
-	goodsId = args[0]
-
-	var logisticInfos []byte
-	logisticIds := goods_logistics[goodsId]
-
-	for i := 0; i < len(logisticIds) - 1; i++ {
-		// Get the state from the ledger
-		logisticbytes, err := stub.GetState(logisticIds[i])
-		if err != nil {
-			jsonResp := "{\"Error\":\"Failed to get state for " + logisticIds[i] + "\"}"
-			return shim.Error(jsonResp)
-		}
-
-		if logisticbytes == nil {
-			jsonResp := "{\"Error\":\"Nil amount for " + logisticIds[i] + "\"}"
-			return shim.Error(jsonResp)
-		}
-
-		logisticInfos = append(logisticInfos, logisticbytes...)
-	}
-
-	
-
-	data[0] = "查询成功"
-	data[1] = string(logisticInfos)
-	databytes,_ := json.Marshal(data)
-
-	return shim.Success(databytes)
-}
-
-/* 分页查看某商品的物流信息 */
-func (t *TraceChaincode) queryLogisticByPage(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	var goodsId string
-	var pageNum, pageSize, start, end int
-	var logisticInfos []byte
-	var data [2]string
-	var err error
-
-	if len(args) != 2 {
-		return shim.Error("Incorrect number of arguments. Expecting name of the person to query")
-	}
-
-	goodsId = args[0]
-	pageNum, err = strconv.Atoi(args[1])
-	if (err != nil) {
-		return shim.Error("string changeTo int error")
-	}
-	pageSize, err = strconv.Atoi(args[2])
-	if (err != nil) {
-		return shim.Error("string changeTo int error")
-	}
-	start = (pageNum-1) * pageSize
-	end = pageNum * pageSize - 1
-	if (end > len(goodsIds)) {
-		end = len(goodsIds) - 1
-	}
-
-	var logisticIds = goods_logistics[goodsId]
-
-	for i := start; i < end; i++ {
-		// Get the state from the ledger
-		logisticbytes, err := stub.GetState(logisticIds[i])
-		if err != nil {
-			jsonResp := "{\"Error\":\"Failed to get state for " + logisticIds[i] + "\"}"
-			return shim.Error(jsonResp)
-		}
-
-		if logisticbytes == nil {
-			jsonResp := "{\"Error\":\"Nil amount for " + logisticIds[i] + "\"}"
-			return shim.Error(jsonResp)
-		}
-
-		logisticInfos = append(logisticInfos, logisticbytes...)
-	}
-
-	data[0] = "查询成功"
-	data[1] = string(logisticInfos)
-	databytes,_ := json.Marshal(data)
-
-	return shim.Success(databytes)
-}
-
 
 /* 删除商品信息 */
 func (t *TraceChaincode) deleteGoods(stub shim.ChaincodeStubInterface, args []string) pb.Response {
