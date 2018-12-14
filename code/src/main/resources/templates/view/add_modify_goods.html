@@ -74,7 +74,7 @@
 				<form id="goodsForm">
 					<div class="col-xs-3">
 						<label>ID</label>
-						<input type="text" readonly="readonly" class="form-control" id="id" name="id" placeholder="ID" th:value="${id}">
+						<input type="text" readonly="readonly" class="form-control" id="goodsId" name="goodsId" placeholder="ID" th:value="${id}">
 					</div>
 					<div class="col-xs-3">
 						<label>Name</label>
@@ -143,17 +143,13 @@
 					</div>
 					<!-- <div class="modal-body"> -->
 						<form>
-							<div class="form-group col-xs-12" hidden="hidden">
-								<label for="id">ID</label>
-								<input type="text" class="form-control" id="id" name="id" placeholder="ID">
+							<div class="col-xs-12" hidden="hidden">
+								<label>ID</label>
+								<input type="text" id="logisticId" name="logisticId" placeholder="ID">
 							</div>
-							<div class="form-group col-xs-12" hidden="hidden">
-								<label for="goodsId">GoodsID</label>
-								<input type="text" class="form-control" id="goodsId" name="goodsId" placeholder="ID">
-							</div>
-							<div class="form-group col-xs-12">
-								<label for="cityName">CityName</label>
-								<input type="text" class="form-control" id="cityName" name="cityName" placeholder="CITYNAME">
+							<div class="col-xs-12">
+								<label>CityName</label>
+								<input type="text" id="cityName" name="cityName" placeholder="CITYNAME">
 							</div>
 						</form>
 					<!-- </div> -->
@@ -177,7 +173,7 @@
 			
 			$(".goods_save").click(function(){
 				
-				var id = $("#id").val();
+				var id = $("#goodsId").val();
 				var name = $("#name").val();
 				var price = $("#price").val();
 				var registerDate = $("#registerDate").val();
@@ -200,7 +196,7 @@
 				    	   if(data.result) {
 				    		   alert(data.message);
 				    		   setTimeout(function() {
-				    			   window.location.href="/showGoods";
+				    			   window.location.href="/goods/toModify?id="+data.result.goods.id;
 				    	    	}, 1000);
 				    	   }
 				       },
@@ -210,16 +206,27 @@
 				   });
 			});
 			$(".logistic_save").click(function(){
+				var id = $("#logisticId").val();
+				var goodsId = $("#goodsId").val();
+				var cityName = $("#cityName").val();
+				if(!goodsId || !cityName) {
+					alert("请完善参数.");
+					return;
+				}
 				$.ajax({
 						type:"post",
 				       dataType:"json",
 				       url:"/logistic/add",
-				       data:$("#goodsForm").serialize(),
+				       data:{
+				    	   id: id,
+				    	   goodsId: goodsId,
+				    	   cityName: cityName
+				       },
 				       success:function (data) {
 				    	   if(data.result) {
 				    		   alert("save success");
 				    		   setTimeout(function() {
-				    			   window.location.href="/showGoods";
+				    			   window.location.href="/goods/toModify?id="+id;
 				    	    	}, 1000);
 				    	   }
 				       },

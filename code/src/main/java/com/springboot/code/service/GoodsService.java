@@ -71,12 +71,12 @@ public class GoodsService {
 		
 	}
 	
-	public CommonResponse findById(CommonRequestAttributes attributes, List<String> params) {
+	public CommonResponse findLogisticById(CommonRequestAttributes attributes, List<String> params) {
 
 		CommonResponse retval = new CommonResponse(false);
 		Map<String, Object> map = new HashMap<>();
 		map.put("type", "query");
-		map.put("fcn", "queryGoodsById");
+		map.put("fcn", "queryLogisticByGoodsId");
 		
 		int length = params.size();
         String[] argArray = new String[length];

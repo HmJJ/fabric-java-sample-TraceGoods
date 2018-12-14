@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.springboot.basic.support.CommonRequestAttributes;
 import com.springboot.basic.support.CommonResponse;
 import com.springboot.basic.utils.StringUtils;
@@ -32,6 +34,24 @@ import com.springboot.code.service.GoodsService;
 public class GoodsController {
 	
 	@Autowired private GoodsService goodsService;
+	
+	@RequestMapping("toAdd")
+	public String toAdd(CommonRequestAttributes attributes, Model model) {
+		
+		return "/view/add_modify_goods";
+	}
+	
+	@RequestMapping("toModify")
+	public String toModify(CommonRequestAttributes attributes, Model model) {
+		JSONObject result = goodsService.findAll(attributes);
+		
+		String txid = result.getString("txid");
+		JSONArray resultArry = JSONArray.parseArray(result.getString("result"));
+
+		model.addAttribute("txid", txid);
+		
+		return "/view/add_modify_goods";
+	}
 	
 	@RequestMapping("add")
 	@ResponseBody
@@ -88,7 +108,7 @@ public class GoodsController {
 		return JSON.toJSONString(retval);
 	}
 	
-	@RequestMapping(value = "findById")
+	@RequestMapping(value = "findLogisticById")
 	public String findById(CommonRequestAttributes attributes, Model model, @RequestParam String id) {
 		CommonResponse retval = new CommonResponse();
 		
@@ -99,7 +119,7 @@ public class GoodsController {
 		
 		List<String> params = new ArrayList<>();
 		params.add(id);
-		retval = goodsService.modify(attributes, params);
+		retval = goodsService.findLogisticById(attributes, params);
 		
 		return "view/add_modify_goods";
 	}

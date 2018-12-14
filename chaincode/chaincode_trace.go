@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
+	"strconv"
 	"encoding/json"
-	"strings"
 
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
@@ -44,12 +44,15 @@ func (t *TraceChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	if function == "invoke" {
 		// Make payment of X units from A to B
 		return t.invoke(stub, args)
+	} else if function == "query" {
+		// the old "Query" is now implemtned in invoke
+		return t.query(stub, args)
 	} else if function == "queryAllGoods" {
 		// the old "Query" is now implemtned in invoke
 		return t.queryAllGoods(stub, args)
-	} else if function == "queryGoodsById" {
+	} else if function == "queryLogisticByGoodsId" {
 		// the old "Query" is now implemtned in invoke
-		return t.queryGoodsById(stub, args)
+		return t.queryLogisticByGoodsId(stub, args)
 	} else if function == "addGoods" {
 		return  t.addGoods(stub, args)
 	} else if function == "modifyGoods" {
@@ -66,7 +69,7 @@ func (t *TraceChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 		return t.deleteLogistic(stub, args)
 	}
 
-	return shim.Error("Invalid invoke function name."+ function + "Expecting \"invoke\" \"delete\" \"query\" \"addGoods\" \"modifyGoods\" \"addLogistic\" \"modifyLogistic\" \"deleteGoods\" \"deleteLogistic\" ")
+	return shim.Error("Invalid invoke function name."+ function + "Expecting \"invoke\" \"delete\" \"query\" \"queryAllGoods\" \"queryLogisticByGoodsId\" \"addGoods\" \"modifyGoods\" \"addLogistic\" \"modifyLogistic\" \"deleteGoods\" \"deleteLogistic\" ")
 }
 
 /* 添加商品信息 */
@@ -74,6 +77,7 @@ func (t *TraceChaincode)addGoods(stub shim.ChaincodeStubInterface, args []string
 	//var goods Goods    // Entities
 	var id, name, price, registerDate string
 	var err error
+	isExist := true
 
 	if len(args) != 4 {
 		return shim.Error("Incorrect number of arguments. Expecting name of the person to query")
@@ -87,6 +91,16 @@ func (t *TraceChaincode)addGoods(stub shim.ChaincodeStubInterface, args []string
 
 	fmt.Printf("id = %s,goodsName=%s, price = %s, registerDate = %s\n", id, name, price, registerDate)
 
+
+	goodsInfo, err := stub.GetState(id)
+	if err != nil {
+		return shim.Error("Failed to get state")
+	}
+
+	if goodsInfo != nil {
+		isExist = false
+	}
+
 	// Write the state to the ledger
 	goods := Goods{Id:id, Name:name, Price:price, RegisterDate:registerDate}
 	goodsbytes,_ := json.Marshal(goods)
@@ -99,23 +113,29 @@ func (t *TraceChaincode)addGoods(stub shim.ChaincodeStubInterface, args []string
 	data[0] = "添加商品成功"
 	data[1] = string(goodsbytes)
 
-	var goodsIds []string
-	goodsIdsBytes, err := stub.GetState(goodsListKey)
-	if err != nil {
-		jsonResp := "{\"Error\":\"Failed to get state for " + goodsListKey + "\"}"
-		return shim.Error(jsonResp)
-	}
+	if isExist {
+		var goodsIds []string
+		goodsIdsBytes, err := stub.GetState(goodsListKey)
+		if err != nil {
+			jsonResp := "{\"Error\":\"Failed to get state for " + goodsListKey + "\"}"
+			return shim.Error(jsonResp)
+		}
 
-	if goodsbytes != nil {
-		goodsIds = strings.Fields(string(goodsIdsBytes))
-	}
+		if goodsbytes != nil {
+			err = json.Unmarshal(goodsIdsBytes, &goodsIds)
+		}
 
-	goodsIds = append(goodsIds, id)
+		goodsIds = append(goodsIds, id)
 
-	newgoodsIdsBytes,_ := json.Marshal(goodsIds)
-	err = stub.PutState(goodsListKey, newgoodsIdsBytes)
-	if err != nil {
-		data[2] = err.Error()
+		newgoodsIdsBytes,_ := json.Marshal(goodsIds)
+		err = stub.PutState(goodsListKey, newgoodsIdsBytes)
+		if err != nil {
+			data[2] = err.Error()
+		} else {
+			data[2] = strconv.FormatBool(isExist)
+		}
+	} else {
+		data[2] = strconv.FormatBool(isExist)
 	}
 	
 	databytes,_ := json.Marshal(data)
@@ -252,26 +272,38 @@ func (t *TraceChaincode) query(stub shim.ChaincodeStubInterface, args []string) 
 
 /* 查看所有商品信息 */
 func (t *TraceChaincode) queryAllGoods(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+
 	goodsIdsBytes, err := stub.GetState(goodsListKey)
 	if err != nil {
 		shim.Error(err.Error())
 	}
 	
 	var goodsIds []string
-	goodsIdStr := string(goodsIdsBytes)
 
-	goodsIds = strings.Fields(goodsIdStr)
+	err = json.Unmarshal(goodsIdsBytes, &goodsIds)
+
+	// goodsIds = strings.Split(goodsIdStr, ",")
 
 	var goodsBytes []byte
-	for index, value := range goodsIds {
-		goodsIdbytes, err := stub.GetState(goodsIds[index])
+	for index := range goodsIds {
+
+		// var logInfo [1]string
+
+		id := goodsIds[index]
+
+		// logInfo[0] = id
+		// logbytes,_ := json.Marshal(logInfo)
+
+		// return shim.Success(logbytes)
+
+		goodsIdbytes, err := stub.GetState(id)
 		if err != nil {
-			jsonResp := "{\"Error\":\"Failed to get state for " + value + "\"}"
+			jsonResp := "{\"Error\":\"Failed to get state for " + id + "\"}"
 			return shim.Error(jsonResp)
 		}
 
-		if goodsBytes == nil {
-			jsonResp := "{\"Error\":\"Nil amount for " + value + "\"}"
+		if goodsIdbytes == nil {
+			jsonResp := "{\"Error\":\"Nil amount for " + id + "\"}"
 			return shim.Error(jsonResp)
 		}
 
@@ -286,8 +318,8 @@ func (t *TraceChaincode) queryAllGoods(stub shim.ChaincodeStubInterface, args []
 	return shim.Success(databytes)
 }
 
-/* 根据商品id查看商品信息 */
-func (t *TraceChaincode) queryGoodsById(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+/* 根据商品id查看商品的物流信息 */
+func (t *TraceChaincode) queryLogisticByGoodsId(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	var id string
 	var data [2]string
 
@@ -297,8 +329,8 @@ func (t *TraceChaincode) queryGoodsById(stub shim.ChaincodeStubInterface, args [
 
 	id = args[0]
 
-	logisticsMap := []map[string]interface{}{}
-	resultIterator, err := stub.GetStateByPartialCompositeKey("Operat~Pro:", []string{id})
+	logisticsMap := []map[string]Logistic{}
+	resultIterator, err := stub.GetStateByPartialCompositeKey("Goods~Logistic:", []string{id})
 	defer resultIterator.Close()
 	for resultIterator.HasNext() {
 		item, _ := resultIterator.Next()
@@ -314,7 +346,7 @@ func (t *TraceChaincode) queryGoodsById(stub shim.ChaincodeStubInterface, args [
    		}
 
 
-		l := map[string]interface{}{"operation":logistic}
+		l := map[string]Logistic{"operation":logistic}
 	    logisticsMap = append(logisticsMap, l)
 	}
 	logisticJson, err := json.Marshal(logisticsMap)

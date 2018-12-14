@@ -4,28 +4,42 @@ docker exec -it cli bash
 
 创建一个channel
 peer channel create -o orderer.example.com:7050 -c mychannel  -f ./channel-artifacts/mychannel.tx
-或者
-peer channel create -o orderer.example.com:7050 -c mychannel -t 50 -f ./channel-artifacts/mychannel.tx
 
 通过mychannel.block文件来加入该channel
 peer channel join -b mychannel.block
 
+安装智能合约
 peer chaincode install -n tracegoods -p github.com/hyperledger/fabric/sheep/chaincode/go/trace_goods -v 1.0
 
+初始化
 peer chaincode instantiate -o orderer.example.com:7050 -C mychannel -n tracegoods -c '{"Args":["init"]}' -P "OR ('Org1MSP.member')" -v 1.0
 
-peer chaincode invoke -C mychannel -n tracegoods -c '{"Args":["addGoods","goods_001","PS4","2000","20181212"]}'
+升级智能合约
+peer chaincode upgrade -o orderer.example.com:7050 -C mychannel -n tracegoods -c '{"Args":["init"]}' -P "OR ('Org1MSP.member')" -v 1.0
 
-peer chaincode query -C mychannel -n tracegoods -c '{"Args":["queryGoodsById","goods_001"]}'
+通用查询
+peer chaincode query -C mychannel -n tracegoods -c '{"Args":["query","94cdaa8576314e6bb4277c11bc3f0492"]}'
+peer chaincode query -C mychannel -n tracegoods -c '{"Args":["query","sheep_goods_list"]}'
 
+添加商品
+peer chaincode invoke -C mychannel -n tracegoods -c '{"Args":["addGoods","94cdaa8576314e6bb4277c11bc3f0492","PS4","2000","2018/12/12"]}'
+
+peer chaincode invoke -C mychannel -n tracegoods -c '{"Args":["addGoods","111","PS4","2000","2018/12/12"]}'
+
+修改商品
+peer chaincode invoke -C mychannel -n tracegoods -c '{"Args":["modifyGoods","94cdaa8576314e6bb4277c11bc3f0492","PS5","5000","2018/12/13"]}'
+
+根据id查询商品
+peer chaincode query -C mychannel -n tracegoods -c '{"Args":["queryLogisticByGoodsId","94cdaa8576314e6bb4277c11bc3f0492"]}'
+
+查询所有商品
 peer chaincode query -C mychannel -n tracegoods -c '{"Args":["queryAllGoods"]}'
 
-peer chaincode query -C mychannel -n tracegoods -c '{"Args":["queryGoodsByPage","1","1"]}'
+添加物流信息
+peer chaincode invoke -C mychannel -n tracegoods -c '{"Args":["addLogistic","94cdaa8576314e6bb4277c11bc3f0111","94cdaa8576314e6bb4277c11bc3f0492","美国"]}'
 
-peer chaincode invoke -C mychannel -n tracegoods -c '{"Args":["addLogistic","logistic_PS4_001","goods_001","America"]}'
-peer chaincode invoke -C mychannel -n tracegoods -c '{"Args":["addLogistic","logistic_PS4_002","goods_001","HongKong"]}'
-peer chaincode invoke -C mychannel -n tracegoods -c '{"Args":["addLogistic","logistic_PS4_003","goods_001","ShangHai"]}'
+添加物流信息
+peer chaincode invoke -C mychannel -n tracegoods -c '{"Args":["addLogistic","94cdaa8576314e6bb4277c11bc3f0222","94cdaa8576314e6bb4277c11bc3f0492","HongKong"]}'
 
-peer chaincode query -C mychannel -n tracegoods -c '{"Args":["queryAllLogistic","goods_001"]}'
-
-peer chaincode query -C mychannel -n tracegoods -c '{"Args":["queryLogisticByPage","1","1"]}'
+添加物流信息
+peer chaincode invoke -C mychannel -n tracegoods -c '{"Args":["addLogistic","94cdaa8576314e6bb4277c11bc3f0333","94cdaa8576314e6bb4277c11bc3f0492","ShangHai"]}'
