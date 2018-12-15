@@ -37,26 +37,29 @@ public class IndexController {
 	@RequestMapping(value= "showGoods")
 	public String goodsPage(CommonRequestAttributes attributes, Model model) {
 		
-		JSONObject result = goodsService.findAll(attributes);
+		String jsonStr = goodsService.findAll(attributes);
 		
-		String txid = result.getString("txid");
+		JSONObject jsonObject = JSONObject.parseObject(jsonStr);
 		
-		JSONArray resultArry = JSONArray.parseArray(result.getString("result"));		
-//		JSONObject goodsObj = resultArry.getJSONObject(1);
+		String txid = jsonObject.getString("txid");
+		String preArray = jsonObject.getString("result");
 		
-//		JSONArray goodsArry = JSONArray.parseArray(goodsObj.toJSONString());
-
+		JSONArray resultArry = JSONArray.parseArray(preArray);		
+		String goodsArrayPre = resultArry.getString(1);
+		
+		JSONArray goodsArray = JSONArray.parseArray(goodsArrayPre);
+		
 		List<Goods> goodsList = new ArrayList<Goods>();
 		
-//		for (int i=0;i<goodsArry.size();i++) {
-//			JSONObject obj = goodsArry.getJSONObject(i);
-//			Goods entity = new Goods();
-//			entity.setId(obj.getString("Id"));
-//			entity.setName(obj.getString("Name"));
-//			entity.setPrice(obj.getString("Price"));
-//			entity.setRegisterDate(obj.getString("RegisterDate"));
-//			goodsList.add(entity);
-//		}
+		for(int i=0; i<goodsArray.size();i++) {
+			JSONObject goodsObject = goodsArray.getJSONObject(i);
+			Goods goods = new Goods();
+			goods.setId(goodsObject.getString("Id"));
+			goods.setName(goodsObject.getString("Name"));
+			goods.setPrice(goodsObject.getString("Price"));
+			goods.setRegisterDate(goodsObject.getString("RegisterDate"));
+			goodsList.add(goods);
+		}
 		
 		model.addAttribute("txid", txid);
 		model.addAttribute("goodsInfo", goodsList);

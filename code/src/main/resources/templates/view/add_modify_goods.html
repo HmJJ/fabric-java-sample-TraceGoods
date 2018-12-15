@@ -64,7 +64,7 @@
 					<a href="#"><button class="btn btn-primary btn-default goods_save">保存</button></a>
 				</div>
 				<div class="col-xs-1" style="text-align: left;">
-					<button class="btn btn-default" onclick="javascript:history.back(-1);">返回</button>
+					<a th:href="@{/showGoods}"><button class="btn btn-default">返回</button></a>
 				</div>
 				<div class="col-xs-1">
 				</div>
@@ -74,19 +74,19 @@
 				<form id="goodsForm">
 					<div class="col-xs-3">
 						<label>ID</label>
-						<input type="text" readonly="readonly" class="form-control" id="goodsId" name="goodsId" placeholder="ID" th:value="${id}">
+						<input type="text" readonly="readonly" class="form-control" id="goodsId" name="goodsId" placeholder="ID" th:value="${goods.id}">
 					</div>
 					<div class="col-xs-3">
 						<label>Name</label>
-						<input type="text" class="form-control" id="name" name="name" placeholder="NAME" th:text="${name}">
+						<input type="text" class="form-control" id="name" name="name" placeholder="NAME" th:value="${goods.name}">
 					</div>
 					<div class="col-xs-3">
 						<label>Price (￥)</label>
-						<input type="text" class="form-control" id="price" name="price" placeholder="PRICE" th:text="${price}">
+						<input type="text" class="form-control" id="price" name="price" placeholder="PRICE" th:value="${goods.price}">
 					</div>
 					<div class="col-xs-3">
 						<label>Register Date</label>
-						<input type="date" class="form-control" id="registerDate" name="registerDate" th:text="${registerDate}">
+						<input type="date" class="form-control" id="registerDate" name="registerDate" th:value="${goods.registerDate}">
 					</div>
 					<div class="col-xs-2"></div>
 				</form>
@@ -113,19 +113,17 @@
 				<table class="table table-striped">
 					<thead>
 						<tr>
-							<th class="col-xs-1">#</th>
-							<th class="col-xs-2">物流编号 ID</th>
-							<th class="col-xs-2">城市名称 Name</th>
-							<th class="col-xs-7">hash</th>
+							<th class="col-xs-2">#</th>
+							<th class="col-xs-5">物流编号 ID</th>
+							<th class="col-xs-5">城市名称 Name</th>
 						</tr>
 					</thead>
 					<tbody>
-						<div th:if="${logisticInfo != null}" th:each="logistic,start : ${logisticInfo}">
+						<div th:if="${logistics != null}" th:each="logistic,start : ${logistics}">
 							<tr>
-								<th class="col-xs-1" th:text="${start}">num</th>
-								<td class="col-xs-2" th:text="${logistic.id}">id</td>
-								<td class="col-xs-2" th:text="${logistic.cityName}">cityName</td>
-								<td class="col-xs-7" th:text="${logistic.hash}">hash</td>
+								<th class="col-xs-2" th:text="${start.count}">num</th>
+								<td class="col-xs-5" th:text="${logistic.id}">id</td>
+								<td class="col-xs-5" th:text="${logistic.cityName}">cityName</td>
 							</tr>
 						</div>
 					</tbody>
@@ -165,8 +163,7 @@
 	
 	<script th:inline="javascript">
 		$(document).ready(function(){
-			
-			var goodsId = $("#id").val();
+			var goodsId = [[${goodsId}]]
 			if(!goodsId) {
 				$(".logistic_add").attr("disabled", true);
 			}
@@ -182,10 +179,18 @@
 					return;
 				}
 				
+				var _url;
+				
+				if(!id){
+					_url = "/goods/add"
+				} else {
+					_url = "/goods/modify"
+				}
+				
 				$.ajax({
 				       type: "POST",
 				       dataType:"json",
-				       url:"/goods/add",
+				       url:_url,
 				       data:{
 				    	   id: id,
 				    	   name: name,
@@ -196,7 +201,7 @@
 				    	   if(data.result) {
 				    		   alert(data.message);
 				    		   setTimeout(function() {
-				    			   window.location.href="/goods/toModify?id="+data.result.goods.id;
+				    			   window.location.href="/goods/findById?id="+data.data.id;
 				    	    	}, 1000);
 				    	   }
 				       },
@@ -226,7 +231,7 @@
 				    	   if(data.result) {
 				    		   alert("save success");
 				    		   setTimeout(function() {
-				    			   window.location.href="/goods/toModify?id="+id;
+				    			   window.location.href="/goods/findById?id="+goodsId;
 				    	    	}, 1000);
 				    	   }
 				       },

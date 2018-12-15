@@ -6,6 +6,7 @@ services:
     container_name: orderer.example.com
     image: hyperledger/fabric-orderer
     environment:
+      - GODEBUG=netdns=go
       - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=sheep_default
       # - ORDERER_GENERAL_LOGLEVEL=error
       - ORDERER_GENERAL_LOGLEVEL=debug

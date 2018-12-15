@@ -5,6 +5,8 @@ services:
   couchdb:
     container_name: couchdb
     image: hyperledger/fabric-couchdb
+    environment:
+      - GODEBUG=netdns=go
     # Comment/Uncomment the port mapping if you want to hide/expose the CouchDB service,
     # for example map it to utilize Fauxton User Interface in dev environments.
     ports:
@@ -14,6 +16,7 @@ services:
     container_name: ca
     image: hyperledger/fabric-ca
     environment:
+      - GODEBUG=netdns=go
       - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
       - FABRIC_CA_SERVER_CA_NAME=ca
       - FABRIC_CA_SERVER_TLS_ENABLED=false
@@ -28,8 +31,9 @@ services:
   peer0.org1.example.com:
     container_name: peer0.org1.example.com
     image: hyperledger/fabric-peer
-#    restart: always
+    restart: always
     environment:
+      - GODEBUG=netdns=go
       - CORE_LEDGER_STATE_STATEDATABASE=couchdb
       - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb:5984
 

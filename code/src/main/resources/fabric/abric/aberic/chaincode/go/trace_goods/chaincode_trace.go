@@ -25,6 +25,7 @@ type Logistic struct {
 	Id string            //物流id
 	GoodsId string       //商品id
 	CityName string      //城市名称
+	Sort string          //排序
 }
 
 /* 商品列表key */
@@ -156,7 +157,7 @@ func (t *TraceChaincode)modifyGoods(stub shim.ChaincodeStubInterface, args []str
 	id = args[0]
 	name = args[1]
 	price = args[2]
-	registerDate = args[4]
+	registerDate = args[3]
 
 	fmt.Printf("id = %s,goodsName=%s, price = %s, registerDate = %s\n", id, name, price, registerDate)
 
@@ -178,7 +179,7 @@ func (t *TraceChaincode)modifyGoods(stub shim.ChaincodeStubInterface, args []str
 /* 添加物流信息 */
 func (t *TraceChaincode)addLogistic(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	//var logistic Logistic    // Entities
-	var id, goodsId, cityName string
+	var id, goodsId, cityName, sort string
 	var err error
 
 	if len(args) != 3 {
@@ -192,8 +193,29 @@ func (t *TraceChaincode)addLogistic(stub shim.ChaincodeStubInterface, args []str
 
 	fmt.Printf("id = %s,goodsId=%s, price = %s, registerDate = %s\n", id, goodsId, cityName)
 
+	logisticsMap := []Logistic{}
+	resultIterator, err := stub.GetStateByPartialCompositeKey("Goods~Logistic:", []string{id})
+	defer resultIterator.Close()
+	for resultIterator.HasNext() {
+		item, _ := resultIterator.Next()
+		fmt.Printf("key=%s\n", item.Key)
+		logisticJsonBytes, err := stub.GetState(item.Key)
+		if err != nil {
+			return shim.Error("Failed to get state")
+		}
+		logistic := Logistic{}
+	   	err  = json.Unmarshal(logisticJsonBytes, &logistic)
+		if err != nil {
+   			return shim.Error(err.Error())
+   		}
+
+	    logisticsMap = append(logisticsMap, logistic)
+	}
+
+	sort = strconv.Itoa(len(logisticsMap))
+
 	// Write the state to the ledger
-	logistic := Logistic{Id:id, GoodsId:goodsId, CityName:cityName}
+	logistic := Logistic{Id:id, GoodsId:goodsId, CityName:cityName, Sort:sort}
 
 	key, err := stub.CreateCompositeKey("Goods~Logistic:", []string{goodsId, id})
 	if err != nil {
@@ -282,19 +304,10 @@ func (t *TraceChaincode) queryAllGoods(stub shim.ChaincodeStubInterface, args []
 
 	err = json.Unmarshal(goodsIdsBytes, &goodsIds)
 
-	// goodsIds = strings.Split(goodsIdStr, ",")
-
-	var goodsBytes []byte
+	goodsMap := []Goods{}
 	for index := range goodsIds {
 
-		// var logInfo [1]string
-
 		id := goodsIds[index]
-
-		// logInfo[0] = id
-		// logbytes,_ := json.Marshal(logInfo)
-
-		// return shim.Success(logbytes)
 
 		goodsIdbytes, err := stub.GetState(id)
 		if err != nil {
@@ -307,12 +320,22 @@ func (t *TraceChaincode) queryAllGoods(stub shim.ChaincodeStubInterface, args []
 			return shim.Error(jsonResp)
 		}
 
-		goodsBytes = append(goodsBytes, goodsIdbytes...)
+		goods := Goods{}
+	   	err  = json.Unmarshal(goodsIdbytes, &goods)
+		if err != nil {
+   			return shim.Error(err.Error())
+   		}
+
+		goodsMap = append(goodsMap, goods)
+	}
+	goodsJson, err := json.Marshal(goodsMap)
+	if err != nil {
+		shim.Error("Failed to decode json of productMap")
 	}
 
 	var data [2]string
 	data[0] = "查询成功"
-	data[1] = string(goodsBytes)
+	data[1] = string(goodsJson)
 	databytes,_ := json.Marshal(data)
 
 	return shim.Success(databytes)
@@ -329,7 +352,7 @@ func (t *TraceChaincode) queryLogisticByGoodsId(stub shim.ChaincodeStubInterface
 
 	id = args[0]
 
-	logisticsMap := []map[string]Logistic{}
+	logisticsMap := []Logistic{}
 	resultIterator, err := stub.GetStateByPartialCompositeKey("Goods~Logistic:", []string{id})
 	defer resultIterator.Close()
 	for resultIterator.HasNext() {
@@ -345,9 +368,7 @@ func (t *TraceChaincode) queryLogisticByGoodsId(stub shim.ChaincodeStubInterface
    			return shim.Error(err.Error())
    		}
 
-
-		l := map[string]Logistic{"operation":logistic}
-	    logisticsMap = append(logisticsMap, l)
+	    logisticsMap = append(logisticsMap, logistic)
 	}
 	logisticJson, err := json.Marshal(logisticsMap)
 	if err != nil {

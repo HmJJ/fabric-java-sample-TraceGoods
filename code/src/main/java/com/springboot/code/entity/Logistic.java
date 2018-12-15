@@ -14,4 +14,6 @@ public class Logistic {
 	String goodsId;
 	
 	String cityName;
+	
+	int sort;
 }

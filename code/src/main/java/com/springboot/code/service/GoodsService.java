@@ -21,11 +21,12 @@ import com.springboot.fabric.interactive.service.SimpleService;
 public class GoodsService {
 	
 	@Autowired private SimpleService simpleService;
+	
+	Map<String, Object> map = new HashMap<>();
 
 	public CommonResponse add(CommonRequestAttributes attributes, List<String> params) {
 		
 		CommonResponse retval = new CommonResponse(false);
-		Map<String, Object> map = new HashMap<>();
 		map.put("type", "invoke");
 		map.put("fcn", "addGoods");
 
@@ -47,16 +48,17 @@ public class GoodsService {
 			retval.setMessage("添加成功!");
 		}
 		
-		System.out.println(result);
+		map.clear();
+		map.put("id", params.get(0));
 		
-		retval.setData(result);
+		retval.setData(map);
 		
 		retval.setResult(true);
 		return retval;
 		
 	}
 
-	public JSONObject findAll(CommonRequestAttributes attributes) {
+	public String findAll(CommonRequestAttributes attributes) {
 
 		Map<String, Object> map = new HashMap<>();
 		map.put("type", "query");
@@ -65,15 +67,32 @@ public class GoodsService {
 		//链中执行
 		String jsonStr=simpleService.chainCode(new JSONObject(map));
 		
-		JSONObject result = JSONObject.parseObject(jsonStr);
-		
-		return result;
+		return jsonStr;
 		
 	}
 	
-	public CommonResponse findLogisticById(CommonRequestAttributes attributes, List<String> params) {
+	public String findById(CommonRequestAttributes attributes, List<String> params) {
 
-		CommonResponse retval = new CommonResponse(false);
+		Map<String, Object> map = new HashMap<>();
+		map.put("type", "query");
+		map.put("fcn", "query");
+		
+		int length = params.size();
+        String[] argArray = new String[length];
+        for (int i = 0; i < length; i++) {
+            argArray[i] = params.get(i);
+        }
+		
+		map.put("array", argArray);
+		//链中执行
+		String jsonStr=simpleService.chainCode(new JSONObject(map));
+		
+		return jsonStr;
+		
+	}
+	
+	public String findLogisticById(CommonRequestAttributes attributes, List<String> params) {
+
 		Map<String, Object> map = new HashMap<>();
 		map.put("type", "query");
 		map.put("fcn", "queryLogisticByGoodsId");
@@ -88,13 +107,7 @@ public class GoodsService {
 		//链中执行
 		String jsonStr=simpleService.chainCode(new JSONObject(map));
 		
-		System.out.println(jsonStr);
-		
-		retval.setData(jsonStr);
-		retval.setMessage("查询成功!");
-		retval.setResult(true);
-		
-		return retval;
+		return jsonStr;
 		
 	}
 
@@ -128,7 +141,6 @@ public class GoodsService {
 	public CommonResponse modify(CommonRequestAttributes attributes, List<String> params) {
 		
 		CommonResponse retval = new CommonResponse(false);
-		Map<String, Object> map = new HashMap<>();
 		map.put("type", "invoke");
 		map.put("fcn", "modifyGoods");
 
@@ -144,7 +156,10 @@ public class GoodsService {
 		
 		System.out.println(jsonStr);
 		
-		retval.setData(jsonStr);
+		map.clear();
+		map.put("id", params.get(0));
+		
+		retval.setData(map);
 		retval.setMessage("修改成功!");
 		retval.setResult(true);
 		return retval;

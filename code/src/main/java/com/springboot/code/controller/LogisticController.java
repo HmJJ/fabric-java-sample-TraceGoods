@@ -5,8 +5,6 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -16,7 +14,6 @@ import com.springboot.basic.support.CommonRequestAttributes;
 import com.springboot.basic.support.CommonResponse;
 import com.springboot.basic.utils.StringUtils;
 import com.springboot.basic.utils.Uuid;
-import com.springboot.code.entity.Logistic;
 import com.springboot.code.service.LogisticService;
 
 /**
@@ -33,18 +30,21 @@ public class LogisticController {
 	
 	@RequestMapping(value = "add")
 	@ResponseBody
-	public String add(CommonRequestAttributes attributes, @RequestBody Logistic entity) {
+	public String add(CommonRequestAttributes attributes,
+			@RequestParam(value="id", required=false) String id,
+			@RequestParam(value="goodsId") String goodsId,
+			@RequestParam(value="cityName") String cityName) {
 		CommonResponse retval = new CommonResponse();
 		
-		if(StringUtils.isBlank(entity.getGoodsId()) || StringUtils.isBlank(entity.getCityName())) {
-			retval.setCode("200");
+		if(StringUtils.isBlank(goodsId) || StringUtils.isBlank(cityName)) {
+			retval.setCode("500");
 			retval.setMessage("参数为空");
 		}
 		
 		List<String> params = new ArrayList<>();
 		params.add(Uuid.getUUID());
-		params.add(entity.getGoodsId());
-		params.add(entity.getCityName());
+		params.add(goodsId);
+		params.add(cityName);
 		retval = logisticService.add(attributes, params);
 		
 		return JSON.toJSONString(retval);
@@ -52,51 +52,26 @@ public class LogisticController {
 	
 	@RequestMapping(value = "modify")
 	@ResponseBody
-	public String modify(CommonRequestAttributes attributes, @RequestBody Logistic entity) {
+	public String modify(CommonRequestAttributes attributes,
+			@RequestParam(value="id", required=false) String id,
+			@RequestParam(value="goodsId") String goodsId,
+			@RequestParam(value="cityName") String cityName) {
 		CommonResponse retval = new CommonResponse();
 		
-		if(StringUtils.isBlank(entity.getGoodsId()) || StringUtils.isBlank(entity.getCityName())) {
-			retval.setCode("200");
+		if(StringUtils.isBlank(id)
+				|| StringUtils.isBlank(goodsId)
+				|| StringUtils.isBlank(cityName)) {
+			retval.setCode("500");
 			retval.setMessage("参数为空");
 		}
 		
 		List<String> params = new ArrayList<>();
-		params.add(entity.getId());
-		params.add(entity.getGoodsId());
-		params.add(entity.getCityName());
+		params.add(id);
+		params.add(goodsId);
+		params.add(cityName);
 		retval = logisticService.modify(attributes, params);
 		
 		return JSON.toJSONString(retval);
-	}
-	
-	@RequestMapping(value = "findAll")
-	@ResponseBody
-	public String findAll(CommonRequestAttributes attributes, Model model) {
-		CommonResponse retval = new CommonResponse();
-		
-		retval = logisticService.findAll(attributes);
-		
-		return JSON.toJSONString(retval);
-	}
-	
-	@RequestMapping(value = "findByPage")
-	@ResponseBody
-	public String findByPage(CommonRequestAttributes attributes, @RequestParam int pageNum, @RequestParam int pageSize) {
-		
-		CommonResponse retval = new CommonResponse();
-		
-		if(String.valueOf(pageNum).equals("") || String.valueOf(pageSize).equals("")) {
-			retval.setCode("200");
-			retval.setMessage("参数为空");
-		}
-
-		List<String> params = new ArrayList<>();
-		params.add(String.valueOf(pageNum));
-		params.add(String.valueOf(pageSize));
-		retval = logisticService.modify(attributes, params);
-		
-		return JSON.toJSONString(retval);
-		
 	}
 	
 	@RequestMapping(value = "delete")
@@ -106,7 +81,7 @@ public class LogisticController {
 		CommonResponse retval = new CommonResponse();
 		
 		if(StringUtils.isBlank(id)) {
-			retval.setCode("200");
+			retval.setCode("500");
 			retval.setMessage("参数为空");
 		}
 
