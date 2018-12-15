@@ -40,7 +40,7 @@ public class GoodsController {
 		model.addAttribute("goodsId", "");
 		model.addAttribute("goods", new Goods());
 		model.addAttribute("logistics", new ArrayList<Logistic>());
-		return "/view/add_modify_goods";
+		return "view/add_modify_goods";
 	}
 
 	@RequestMapping("add")

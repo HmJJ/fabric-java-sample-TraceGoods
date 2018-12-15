@@ -31,7 +31,7 @@ public class IndexController {
 	
 	@RequestMapping(value= "main")
 	public String mainPage() {
-		return "/view/main";
+		return "view/main";
 	}
 	
 	@RequestMapping(value= "showGoods")
@@ -64,12 +64,12 @@ public class IndexController {
 		model.addAttribute("txid", txid);
 		model.addAttribute("goodsInfo", goodsList);
 		
-		return "/view/showGoods";
+		return "view/showGoods";
 	}
 	
 	@RequestMapping(value= "showFabric")
 	public String tracePage() {
-		return "/view/showFabric";
+		return "view/showFabric";
 	}
 	
 }
