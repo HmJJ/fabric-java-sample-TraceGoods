@@ -127,14 +127,13 @@
 								<td class="col-xs-2" th:text="${logistic.cityName}">cityName</td>
 								<td class="col-xs-3">
 									<button type="button" class="btn btn-primary btn-default logistic_modify" >修改</button>
-									<a th:href="@{'/logistic/delete?goodsId='+${goods.id}+'&logisticId='+${logistic.id}}"><button class="btn btn-sm btn-info">删除</button></a>
+									<button class="btn btn-sm btn-info" onclick="logisticDel(${logistic.id}, ${goods.id})">删除</button>
 								</td>
 							</tr>
 						</div>
 					</tbody>
 				</table>
 			</div><!-- /example -->
-
 		</div>
 
 		<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
@@ -247,6 +246,30 @@
 				   });
 			});
 		});
+
+		function logisticDel(_logisticId, _goodsId){
+			alert(_goodsId, _logisticId);
+			$.ajax({
+				type:"post",
+		       dataType:"json",
+		       url:"/logistic/delete",
+		       data:{
+		    	   goodsId: _goodsId,
+		    	   logisticId: _logisticId
+		       },
+		       success:function (data) {
+		    	   if(data.result) {
+		    		   alert(data.data["message"]);
+		    		   setTimeout(function() {
+		    			   window.location.href="/goods/findById?id="+_goodsId;
+		    	    	}, 1000);
+		    	   }
+		       },
+		       error:function(data){
+		   			alert("Connecte timeout"); 
+		       }
+		   });
+		}
 	</script>
 	
 </html>
