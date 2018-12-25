@@ -2,7 +2,9 @@ package com.springboot.code.controller;
 
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -34,6 +36,8 @@ public class GoodsController {
 
 	@Autowired
 	private GoodsService goodsService;
+	
+	Map<String, Object> map = new HashMap<>();
 
 	@RequestMapping("toAdd")
 	public String toAdd(CommonRequestAttributes attributes, Model model) {
@@ -68,8 +72,28 @@ public class GoodsController {
 			e.printStackTrace();
 		}
 		params.add(registerDate);
-		retval = goodsService.add(attributes, params);
+		
+		String jsonStr = goodsService.add(attributes, params);
 
+		JSONObject jsonObject = JSONObject.parseObject(jsonStr);
+		
+		if (Integer.parseInt(jsonObject.getString("status")) == 40029) {
+			retval.setMessage("fabric错误，请检查设置以及智能合约!");
+			retval.setCode("40029");
+		} else if (Integer.parseInt(jsonObject.getString("status")) == 8) {
+			retval.setMessage("fabric用户未登陆!");
+			retval.setCode("8");
+		} else {
+			map.clear();
+			map.put("id", params.get(0));
+			map.put("goods", params);
+
+			retval.setCode("200");
+			retval.setMessage("添加成功!");
+			retval.setData(map);
+			retval.setResult(true);
+		}
+		
 		return JSON.toJSONString(retval);
 	}
 
@@ -91,7 +115,25 @@ public class GoodsController {
 		params.add(name);
 		params.add(price);
 		params.add(registerDate);
-		retval = goodsService.modify(attributes, params);
+		String jsonStr = goodsService.modify(attributes, params);
+		
+		JSONObject jsonObject = JSONObject.parseObject(jsonStr);
+		
+		if (Integer.parseInt(jsonObject.getString("status")) == 40029) {
+			retval.setMessage("fabric错误，请检查设置以及智能合约!");
+			retval.setCode("40029");
+		} else if (Integer.parseInt(jsonObject.getString("status")) == 8) {
+			retval.setMessage("fabric用户未登陆!");
+			retval.setCode("8");
+		} else {
+			map.clear();
+			map.put("goods", params);
+
+			retval.setCode("200");
+			retval.setMessage("添加成功!");
+			retval.setData(map);
+			retval.setResult(true);
+		}
 
 		return JSON.toJSONString(retval);
 	}
@@ -103,6 +145,7 @@ public class GoodsController {
 		if (StringUtils.isBlank(id)) {
 			retval.setCode("200");
 			retval.setMessage("参数为空");
+			return "view/add_modify_goods";
 		}
 
 		List<String> params = new ArrayList<>();
@@ -115,76 +158,94 @@ public class GoodsController {
 		jsonStr = goodsService.findById(attributes, params);
 
 		jsonObject = JSONObject.parseObject(jsonStr);
+		
+		if (Integer.parseInt(jsonObject.getString("status")) == 40029) {
+			model.addAttribute("message", "fabric错误，请检查设置以及智能合约！");
+			retval.setCode("200");
+		} else if (Integer.parseInt(jsonObject.getString("status")) == 8) {
+			model.addAttribute("message", "fabric用户未登陆");
+			retval.setCode("200");
+		} else {
+			preArray = jsonObject.getString("result");
 
-		preArray = jsonObject.getString("result");
+			resultArry = JSONArray.parseArray(preArray);
+			String goodsJson = resultArry.getString(1);
+			JSONObject goodsObject = JSONObject.parseObject(goodsJson);
 
-		resultArry = JSONArray.parseArray(preArray);
-		String goodsJson = resultArry.getString(1);
-		JSONObject goodsObject = JSONObject.parseObject(goodsJson);
+			Goods goods = new Goods();
+			goods.setId(goodsObject.getString("Id"));
+			goods.setName(goodsObject.getString("Name"));
+			goods.setPrice(goodsObject.getString("Price"));
+			goods.setRegisterDate(goodsObject.getString("RegisterDate").replace("/", "-"));
 
-		Goods goods = new Goods();
-		goods.setId(goodsObject.getString("Id"));
-		goods.setName(goodsObject.getString("Name"));
-		goods.setPrice(goodsObject.getString("Price"));
-		goods.setRegisterDate(goodsObject.getString("RegisterDate").replace("/", "-"));
+			model.addAttribute("goods", goods);
+			model.addAttribute("goodsId", id);
 
-		model.addAttribute("goods", goods);
-		model.addAttribute("goodsId", id);
+			jsonStr = goodsService.findLogisticById(attributes, params);
 
-		jsonStr = goodsService.findLogisticById(attributes, params);
+			jsonObject = JSONObject.parseObject(jsonStr);
 
-		jsonObject = JSONObject.parseObject(jsonStr);
+			preArray = jsonObject.getString("result");
 
-		preArray = jsonObject.getString("result");
+			resultArry = JSONArray.parseArray(preArray);
+			String logisticArrayPre = resultArry.getString(1);
 
-		resultArry = JSONArray.parseArray(preArray);
-		String logisticArrayPre = resultArry.getString(1);
+			JSONArray logicticArray = JSONArray.parseArray(logisticArrayPre);
 
-		JSONArray logicticArray = JSONArray.parseArray(logisticArrayPre);
+			List<Logistic> logicticList = new ArrayList<Logistic>();
 
-		List<Logistic> logicticList = new ArrayList<Logistic>();
+			for (int i = 0; i < logicticArray.size(); i++) {
+				JSONObject logicticObject = logicticArray.getJSONObject(i);
+				Logistic logictic = new Logistic();
+				logictic.setId(logicticObject.getString("Id"));
+				logictic.setGoodsId(logicticObject.getString("GoodsId"));
+				logictic.setCityName(logicticObject.getString("CityName"));
+				logictic.setSort(Integer.parseInt(logicticObject.getString("Sort")));
+				logicticList.add(logictic);
+			}
 
-		for (int i = 0; i < logicticArray.size(); i++) {
-			JSONObject logicticObject = logicticArray.getJSONObject(i);
-			Logistic logictic = new Logistic();
-			logictic.setId(logicticObject.getString("Id"));
-			logictic.setGoodsId(logicticObject.getString("GoodsId"));
-			logictic.setCityName(logicticObject.getString("CityName"));
-			logictic.setSort(Integer.parseInt(logicticObject.getString("Sort")));
-			logicticList.add(logictic);
-		}
-
-		for (int i = 0; i < logicticList.size() - 1; i++) {
-			for (int j = 0; j < logicticList.size() - 1 - i; j++) {
-				if (logicticList.get(j).getSort() > logicticList.get(j + 1).getSort()) {
-					Logistic temp = logicticList.get(j);
-					logicticList.set(j, logicticList.get(j + 1));
-					logicticList.set(j + 1, temp);
+			for (int i = 0; i < logicticList.size() - 1; i++) {
+				for (int j = 0; j < logicticList.size() - 1 - i; j++) {
+					if (logicticList.get(j).getSort() > logicticList.get(j + 1).getSort()) {
+						Logistic temp = logicticList.get(j);
+						logicticList.set(j, logicticList.get(j + 1));
+						logicticList.set(j + 1, temp);
+					}
 				}
 			}
-		}
 
-		model.addAttribute("logistics", logicticList);
+			retval.setCode("200");
+			model.addAttribute("logistics", logicticList);
+		}
 
 		return "view/add_modify_goods";
 	}
 
 	@RequestMapping(value = "delete")
-	@ResponseBody
-	public String delete(CommonRequestAttributes attributes, String id) {
-
-		CommonResponse retval = new CommonResponse();
+	public String delete(CommonRequestAttributes attributes, Model model, @RequestParam(value = "id", required = true) String id) {
 
 		if (StringUtils.isBlank(id)) {
-			retval.setCode("200");
-			retval.setMessage("参数为空");
+			model.addAttribute("code", "40029");
+			model.addAttribute("message", "参数为空!");
 		}
 
 		List<String> params = new ArrayList<>();
 		params.add(id);
-		retval = goodsService.modify(attributes, params);
+		String jsonStr = goodsService.delete(attributes, params);
+		
+		JSONObject jsonObject = JSONObject.parseObject(jsonStr);
+		
+		if (Integer.parseInt(jsonObject.getString("status")) == 40029) {
+			model.addAttribute("message", "fabric错误，请检查设置以及智能合约！");
+			model.addAttribute("code", "40029");
+		} else if (Integer.parseInt(jsonObject.getString("status")) == 8) {
+			model.addAttribute("message", "fabric用户未登陆!");
+			model.addAttribute("code", "8");
+		} else {
+			model.addAttribute("message", "删除成功!");
+			model.addAttribute("code", "200");
+		}
 
-		return JSON.toJSONString(retval);
-
+		return "view/showGoods";
 	}
 }

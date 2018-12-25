@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONObject;
 import com.springboot.basic.support.CommonRequestAttributes;
-import com.springboot.basic.support.CommonResponse;
 import com.springboot.fabric.interactive.service.SimpleService;
 
 
@@ -24,9 +23,8 @@ public class GoodsService {
 	
 	Map<String, Object> map = new HashMap<>();
 
-	public CommonResponse add(CommonRequestAttributes attributes, List<String> params) {
+	public String add(CommonRequestAttributes attributes, List<String> params) {
 		
-		CommonResponse retval = new CommonResponse(false);
 		map.put("type", "invoke");
 		map.put("fcn", "addGoods");
 
@@ -40,21 +38,7 @@ public class GoodsService {
 		//链中执行
 		String jsonStr=simpleService.chainCode(new JSONObject(map));
 		
-		JSONObject result = JSONObject.parseObject(jsonStr);
-		
-		if ((int)result.get("status") != 200) {
-			retval.setMessage("添加失败!");
-		} else {
-			retval.setMessage("添加成功!");
-		}
-		
-		map.clear();
-		map.put("id", params.get(0));
-		
-		retval.setData(map);
-		
-		retval.setResult(true);
-		return retval;
+		return jsonStr;
 		
 	}
 
@@ -68,7 +52,6 @@ public class GoodsService {
 		String jsonStr=simpleService.chainCode(new JSONObject(map));
 		
 		return jsonStr;
-		
 	}
 	
 	public String findById(CommonRequestAttributes attributes, List<String> params) {
@@ -88,7 +71,6 @@ public class GoodsService {
 		String jsonStr=simpleService.chainCode(new JSONObject(map));
 		
 		return jsonStr;
-		
 	}
 	
 	public String findLogisticById(CommonRequestAttributes attributes, List<String> params) {
@@ -108,39 +90,10 @@ public class GoodsService {
 		String jsonStr=simpleService.chainCode(new JSONObject(map));
 		
 		return jsonStr;
-		
 	}
 
-	public CommonResponse findByPage(CommonRequestAttributes attributes, List<String> params) {
-
-		CommonResponse retval = new CommonResponse(false);
-		Map<String, Object> map = new HashMap<>();
-		map.put("type", "query");
-		map.put("fcn", "queryGoodsByPage");
-
-		int length = params.size();
-        String[] argArray = new String[length];
-        for (int i = 0; i < length; i++) {
-            argArray[i] = params.get(i);
-        }
+	public String modify(CommonRequestAttributes attributes, List<String> params) {
 		
-		map.put("array", argArray);
-		//链中执行
-		String jsonStr=simpleService.chainCode(new JSONObject(map));
-		
-		System.out.println(jsonStr);
-		
-		retval.setData(jsonStr);
-		retval.setMessage("分页查询成功!");
-		retval.setResult(true);
-		
-		return retval;
-		
-	}
-
-	public CommonResponse modify(CommonRequestAttributes attributes, List<String> params) {
-		
-		CommonResponse retval = new CommonResponse(false);
 		map.put("type", "invoke");
 		map.put("fcn", "modifyGoods");
 
@@ -154,21 +107,11 @@ public class GoodsService {
 		//链中执行
 		String jsonStr=simpleService.chainCode(new JSONObject(map));
 		
-		System.out.println(jsonStr);
-		
-		map.clear();
-		map.put("id", params.get(0));
-		
-		retval.setData(map);
-		retval.setMessage("修改成功!");
-		retval.setResult(true);
-		return retval;
-		
+		return jsonStr;
 	}
 
-	public CommonResponse delete(CommonRequestAttributes attributes, List<String> params) {
+	public String delete(CommonRequestAttributes attributes, List<String> params) {
 
-		CommonResponse retval = new CommonResponse(false);
 		Map<String, Object> map = new HashMap<>();
 		map.put("type", "invoke");
 		map.put("fcn", "deleteGoods");
@@ -183,13 +126,7 @@ public class GoodsService {
 		//链中执行
 		String jsonStr=simpleService.chainCode(new JSONObject(map));
 		
-		System.out.println(jsonStr);
-		
-		retval.setData(jsonStr);
-		retval.setMessage("删除成功!");
-		retval.setResult(true);
-		return retval;
-		
+		return jsonStr;
 	}
 
 }

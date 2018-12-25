@@ -115,7 +115,8 @@
 						<tr>
 							<th class="col-xs-2">#</th>
 							<th class="col-xs-5">物流编号 ID</th>
-							<th class="col-xs-5">城市名称 Name</th>
+							<th class="col-xs-2">城市名称 Name</th>
+							<th class="col-xs-3">#</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -123,7 +124,11 @@
 							<tr>
 								<th class="col-xs-2" th:text="${start.count}">num</th>
 								<td class="col-xs-5" th:text="${logistic.id}">id</td>
-								<td class="col-xs-5" th:text="${logistic.cityName}">cityName</td>
+								<td class="col-xs-2" th:text="${logistic.cityName}">cityName</td>
+								<td class="col-xs-3">
+									<button type="button" class="btn btn-primary btn-default logistic_modify" >修改</button>
+									<a th:href="@{'/logistic/delete?goodsId='+${goods.id}+'&logisticId='+${logistic.id}}"><button class="btn btn-sm btn-info">删除</button></a>
+								</td>
 							</tr>
 						</div>
 					</tbody>
@@ -163,10 +168,11 @@
 	
 	<script th:inline="javascript">
 		$(document).ready(function(){
-			var goodsId = [[${goodsId}]]
+			var goodsId = [[${goodsId}]];
 			if(!goodsId) {
 				$(".logistic_add").attr("disabled", true);
 			}
+			var logisticId = "";
 			
 			$(".goods_save").click(function(){
 				
@@ -229,7 +235,7 @@
 				       },
 				       success:function (data) {
 				    	   if(data.result) {
-				    		   alert("save success");
+				    		   alert(data.message);
 				    		   setTimeout(function() {
 				    			   window.location.href="/goods/findById?id="+goodsId;
 				    	    	}, 1000);

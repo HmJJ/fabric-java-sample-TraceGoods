@@ -90,9 +90,6 @@ func (t *TraceChaincode)addGoods(stub shim.ChaincodeStubInterface, args []string
 	price = args[2]
 	registerDate = args[3]
 
-	fmt.Printf("id = %s,goodsName=%s, price = %s, registerDate = %s\n", id, name, price, registerDate)
-
-
 	goodsInfo, err := stub.GetState(id)
 	if err != nil {
 		return shim.Error("Failed to get state")
@@ -115,7 +112,7 @@ func (t *TraceChaincode)addGoods(stub shim.ChaincodeStubInterface, args []string
 	data[1] = string(goodsbytes)
 
 	if isExist {
-		var goodsIds []string
+		goodsIds := make(map[string]string)
 		goodsIdsBytes, err := stub.GetState(goodsListKey)
 		if err != nil {
 			jsonResp := "{\"Error\":\"Failed to get state for " + goodsListKey + "\"}"
@@ -126,7 +123,7 @@ func (t *TraceChaincode)addGoods(stub shim.ChaincodeStubInterface, args []string
 			err = json.Unmarshal(goodsIdsBytes, &goodsIds)
 		}
 
-		goodsIds = append(goodsIds, id)
+		goodsIds[id] = id
 
 		newgoodsIdsBytes,_ := json.Marshal(goodsIds)
 		err = stub.PutState(goodsListKey, newgoodsIdsBytes)
@@ -196,6 +193,7 @@ func (t *TraceChaincode)addLogistic(stub shim.ChaincodeStubInterface, args []str
 	logisticsMap := []Logistic{}
 	resultIterator, err := stub.GetStateByPartialCompositeKey("Goods~Logistic:", []string{id})
 	defer resultIterator.Close()
+	i := 0
 	for resultIterator.HasNext() {
 		item, _ := resultIterator.Next()
 		fmt.Printf("key=%s\n", item.Key)
@@ -210,9 +208,10 @@ func (t *TraceChaincode)addLogistic(stub shim.ChaincodeStubInterface, args []str
    		}
 
 	    logisticsMap = append(logisticsMap, logistic)
+	    i = i + 1
 	}
 
-	sort = strconv.Itoa(len(logisticsMap))
+	sort = strconv.Itoa(i)
 
 	// Write the state to the ledger
 	logistic := Logistic{Id:id, GoodsId:goodsId, CityName:cityName, Sort:sort}
@@ -238,10 +237,10 @@ func (t *TraceChaincode)addLogistic(stub shim.ChaincodeStubInterface, args []str
 /* 修改物流信息 */
 func (t *TraceChaincode)modifyLogistic(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	//var logistic Logistic    // Entities
-	var id, goodsId, cityName string
+	var id, goodsId, cityName, sort string
 	var err error
 
-	if len(args) != 3 {
+	if len(args) != 4 {
 		return shim.Error("Incorrect number of arguments. Expecting name of the person to query")
 	}
 
@@ -249,13 +248,20 @@ func (t *TraceChaincode)modifyLogistic(stub shim.ChaincodeStubInterface, args []
 	id = args[0]
 	goodsId = args[1]
 	cityName = args[2]
+	sort = args[3]
 
-	fmt.Printf("id = %s,goodsId=%s, price = %s, registerDate = %s\n", id, goodsId, cityName)
+	fmt.Printf("id = %s,goodsId=%s, price = %s, registerDate = %s, sort=%s\n", id, goodsId, cityName, sort)
 
 	// Write the state to the ledger
-	logistic := Logistic{Id:id, GoodsId:goodsId, CityName:cityName}
+	logistic := Logistic{Id:id, GoodsId:goodsId, CityName:cityName, Sort:sort}
+
+	key, err := stub.CreateCompositeKey("Goods~Logistic:", []string{goodsId, id})
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+
 	logisticbytes,_ := json.Marshal(logistic)
-	err = stub.PutState(id, logisticbytes)
+	err = stub.PutState(key, logisticbytes)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -300,23 +306,68 @@ func (t *TraceChaincode) queryAllGoods(stub shim.ChaincodeStubInterface, args []
 		shim.Error(err.Error())
 	}
 	
-	var goodsIds []string
+	goodsIds := make(map[string]string)
 
 	err = json.Unmarshal(goodsIdsBytes, &goodsIds)
 
 	goodsMap := []Goods{}
-	for index := range goodsIds {
+	for id, _id := range goodsIds {
 
-		id := goodsIds[index]
-
-		goodsIdbytes, err := stub.GetState(id)
+		goodsIdbytes, err := stub.GetState(_id)
 		if err != nil {
-			jsonResp := "{\"Error\":\"Failed to get state for " + id + "\"}"
+			jsonResp := "{\"Error\":\"Failed to get state for " + id + _id + "\"}"
 			return shim.Error(jsonResp)
 		}
 
 		if goodsIdbytes == nil {
-			jsonResp := "{\"Error\":\"Nil amount for " + id + "\"}"
+			jsonResp := "{\"Error\":\"Nil amount for " + id + _id + "\"}"
+			return shim.Error(jsonResp)
+		}
+
+		goods := Goods{}
+	   	err  = json.Unmarshal(goodsIdbytes, &goods)
+		if err != nil {
+   			return shim.Error(err.Error())
+   		}
+
+		goodsMap = append(goodsMap, goods)
+	}
+	goodsJson, err := json.Marshal(goodsMap)
+	if err != nil {
+		shim.Error("Failed to decode json of productMap")
+	}
+
+	var data [2]string
+	data[0] = "查询成功"
+	data[1] = string(goodsJson)
+	databytes,_ := json.Marshal(data)
+
+	return shim.Success(databytes)
+}
+
+/* 查看所有商品(包括已删除的)信息 */
+func (t *TraceChaincode) queryAllAddedGoods(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+
+	goodsIdsBytes, err := stub.GetState(goodsListKey)
+	if err != nil {
+		shim.Error(err.Error())
+	}
+	
+	goodsIds := make(map[string]string)
+
+	err = json.Unmarshal(goodsIdsBytes, &goodsIds)
+
+	goodsMap := []Goods{}
+	for id, _id := range goodsIds {
+
+		goodsIdbytes, err := stub.GetState(id)
+		if err != nil {
+			jsonResp := "{\"Error\":\"Failed to get state for " + id + _id + "\"}"
+			return shim.Error(jsonResp)
+		}
+
+		if goodsIdbytes == nil {
+			jsonResp := "{\"Error\":\"Nil amount for " + id + _id + "\"}"
 			return shim.Error(jsonResp)
 		}
 
@@ -399,6 +450,25 @@ func (t *TraceChaincode) deleteGoods(stub shim.ChaincodeStubInterface, args []st
 	err = stub.DelState(id)
 	if err != nil {
 		return shim.Error("Failed to delete state")
+	} else {
+		goodsIds := make(map[string]string)
+		goodsIdsBytes, err := stub.GetState(goodsListKey)
+		if err != nil {
+			jsonResp := "{\"Error\":\"Failed to get state for " + goodsListKey + "\"}"
+			return shim.Error(jsonResp)
+		}
+
+		if goodsIdsBytes != nil {
+			err = json.Unmarshal(goodsIdsBytes, &goodsIds)
+		}
+
+		delete(goodsIds, id)
+
+		newgoodsIdsBytes,_ := json.Marshal(goodsIds)
+		err = stub.PutState(goodsListKey, newgoodsIdsBytes)
+		if err != nil {
+			return shim.Error(err.Error())
+		}
 	}
 
 	return shim.Success(nil)
@@ -407,21 +477,27 @@ func (t *TraceChaincode) deleteGoods(stub shim.ChaincodeStubInterface, args []st
 
 /* 删除物流信息 */
 func (t *TraceChaincode) deleteLogistic(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	if len(args) != 1 {
+	if len(args) != 2 {
 		return shim.Error("Incorrect number of arguments. Expecting 1")
 	}
-	var id string
+	var id, goodsId string
 	var err error
 
 	id = args[0]
+	goodsId = args[1]
 	if err != nil {
 		return shim.Error("Expecting integer value for asset holding")
 	}
 
 	// Delete the key from the state in ledger
-	err = stub.DelState(id)
+	key, err := stub.CreateCompositeKey("Goods~Logistic:", []string{goodsId, id})
 	if err != nil {
-		return shim.Error("Failed to delete state")
+		return shim.Error(err.Error())
+	}
+
+	err = stub.DelState(key)
+	if err != nil {
+		return shim.Error(err.Error())
 	}
 
 	return shim.Success(nil)

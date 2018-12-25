@@ -129,6 +129,7 @@
 		    }
 		    json = json.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
 		    json = json.replace(/{/g, '{<br>&nbsp;&nbsp;').replace(/,/g, ',<br>&nbsp;&nbsp;').replace(/}/g, '<br>}');
+		    json = json.replace(/\[/g, '[<br>&nbsp;&nbsp;').replace(/\]/g, '<br>]');
 		    return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function(match) {
 		        var cls = 'number';
 		        if (/^"/.test(match)) {

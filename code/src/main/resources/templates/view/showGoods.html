@@ -90,7 +90,10 @@
 								<td class="col-xs-2" th:text="${goods.name}">name</td>
 								<td class="col-xs-2" th:text="${goods.price}">price</td>
 								<td class="col-xs-2" th:text="${goods.registerDate}">registerDate</td>
-								<td class="col-xs-2"><a th:href="@{'/goods/findById?id='+${goods.id}}"><button class="btn btn-sm btn-info">详情</button></a></td>
+								<td class="col-xs-2">
+									<a th:href="@{'/goods/findById?id='+${goods.id}}"><button class="btn btn-sm btn-info">详情</button></a>
+									<a th:href="@{'/goods/delete?id='+${goods.id}}"><button class="btn btn-sm btn-info">删除</button></a>
+								</td>
 							</tr>
 						</div>
 					</tbody>
@@ -104,9 +107,10 @@
 							<span aria-hidden="true">&laquo;</span>
 						</a>
 					</li>
-					<div th:if="${pageNum != null}" th:each="pn,start : ${pageNum}">
+					<!-- <div th:if="${pageNum != null}" th:each="pn,start : ${pageNum}">
 						<li><a href="#" th:text="start"></a></li>
-					</div>
+					</div> -->
+					<li><a href="#">1</a></li>
 					<li>
 						<a href="#" aria-label="Next">
 							<span aria-hidden="true">&raquo;</span>
@@ -121,7 +125,12 @@
 	
 	<script th:inline="javascript">
 		$(document).ready(function(){
-			
+			var message = [[${message}]];
+			if(message) {
+				alert(message);
+			}else{
+				alert("Java内部应用错误");
+			}
 		});
 	</script>
 	

@@ -41,28 +41,38 @@ public class IndexController {
 		
 		JSONObject jsonObject = JSONObject.parseObject(jsonStr);
 		
-		String txid = jsonObject.getString("txid");
-		String preArray = jsonObject.getString("result");
-		
-		JSONArray resultArry = JSONArray.parseArray(preArray);		
-		String goodsArrayPre = resultArry.getString(1);
-		
-		JSONArray goodsArray = JSONArray.parseArray(goodsArrayPre);
-		
-		List<Goods> goodsList = new ArrayList<Goods>();
-		
-		for(int i=0; i<goodsArray.size();i++) {
-			JSONObject goodsObject = goodsArray.getJSONObject(i);
-			Goods goods = new Goods();
-			goods.setId(goodsObject.getString("Id"));
-			goods.setName(goodsObject.getString("Name"));
-			goods.setPrice(goodsObject.getString("Price"));
-			goods.setRegisterDate(goodsObject.getString("RegisterDate"));
-			goodsList.add(goods);
+		if (Integer.parseInt(jsonObject.getString("status")) == 40029) {
+			model.addAttribute("message", "fabric错误，请检查设置以及智能合约");
+			model.addAttribute("code", "40029");
+		} else if (Integer.parseInt(jsonObject.getString("status")) == 8) {
+			model.addAttribute("message", "fabric用户未登陆");
+			model.addAttribute("code", "8");
+		} else {
+			String txid = jsonObject.getString("txid");
+			String preArray = jsonObject.getString("result");
+			
+			JSONArray resultArry = JSONArray.parseArray(preArray);		
+			String goodsArrayPre = resultArry.getString(1);
+			
+			JSONArray goodsArray = JSONArray.parseArray(goodsArrayPre);
+			
+			List<Goods> goodsList = new ArrayList<Goods>();
+			
+			for(int i=0; i<goodsArray.size();i++) {
+				JSONObject goodsObject = goodsArray.getJSONObject(i);
+				Goods goods = new Goods();
+				goods.setId(goodsObject.getString("Id"));
+				goods.setName(goodsObject.getString("Name"));
+				goods.setPrice(goodsObject.getString("Price"));
+				goods.setRegisterDate(goodsObject.getString("RegisterDate"));
+				goodsList.add(goods);
+			}
+			
+			model.addAttribute("txid", txid);
+			model.addAttribute("goodsInfo", goodsList);
+			model.addAttribute("message", "查询成功!");
+			model.addAttribute("code", "200");
 		}
-		
-		model.addAttribute("txid", txid);
-		model.addAttribute("goodsInfo", goodsList);
 		
 		return "view/showGoods";
 	}

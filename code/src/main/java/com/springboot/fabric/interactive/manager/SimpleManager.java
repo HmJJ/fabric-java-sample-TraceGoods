@@ -40,7 +40,6 @@ public class SimpleManager extends BaseManager {
         orgManager2
         .init("Org1", false, false)
         .setUser("Admin", getCryptoConfigPath("aberic"), getChannleArtifactsPath("aberic"))
-//        .setUser("haha", "mAtBqOymDtBI", "org1.department1", new HashSet<>(Arrays.asList("hf.Revoker", "hf.GenCRL", "admin")), getCryptoConfigPath("aberic"))
         .setCA("ca", "http://39.108.64.144:7054")
         .setPeers("Org1MSP", "org1.example.com")
         .addPeer("peer0.org1.example.com", "peer0.org1.example.com", "grpc://39.108.64.144:7051", "grpc://39.108.64.144:7053", true)
@@ -57,7 +56,6 @@ public class SimpleManager extends BaseManager {
         orgManager
         .init("Org1", false, false)
         .setUser("Admin", getCryptoConfigPath("sheep"), getChannleArtifactsPath("sheep"))
-//        .setUser("haha", "mAtBqOymDtBI", "org1.department1", new HashSet<>(Arrays.asList("hf.Revoker", "hf.GenCRL", "admin")), getCryptoConfigPath("aberic"))
         .setCA("ca", "http://47.244.142.213:7054")
         .setPeers("Org1MSP", "org1.example.com")
         .addPeer("peer0.org1.example.com", "peer0.org1.example.com", "grpc://47.244.142.213:7051", "grpc://47.244.142.213:7053", true)
@@ -70,7 +68,7 @@ public class SimpleManager extends BaseManager {
             logger.debug(map.get("data"));
         })
         .add();
-        return orgManager.use("Org1");
+        return orgManager2.use("Org1");
     }
 
 }

@@ -1,5 +1,9 @@
+docker stop $(docker ps -aq)
+docker rm $(docker ps -aq)
 
-存数据不能存中文
+docker-compose -f docker-orderer.yaml up -d
+docker-compose -f docker-peer.yaml up -d
+
 docker exec -it cli bash
 
 创建一个channel
@@ -9,7 +13,7 @@ peer channel create -o orderer.example.com:7050 -c mychannel  -f ./channel-artif
 peer channel join -b mychannel.block
 
 安装智能合约
-peer chaincode install -n tracegoods -p github.com/hyperledger/fabric/sheep/chaincode/go/trace_goods -v 1.0
+peer chaincode install -n tracegoods -p github.com/hyperledger/fabric/aberic/chaincode/go/trace_goods -v 1.0
 
 初始化
 peer chaincode instantiate -o orderer.example.com:7050 -C mychannel -n tracegoods -c '{"Args":["init"]}' -P "OR ('Org1MSP.member')" -v 1.0
@@ -30,7 +34,7 @@ peer chaincode invoke -C mychannel -n tracegoods -c '{"Args":["addGoods","75aadc
 peer chaincode invoke -C mychannel -n tracegoods -c '{"Args":["modifyGoods","94cdaa8576314e6bb4277c11bc3f0492","PS5","5000","2018/12/13"]}'
 
 根据id查询商品
-peer chaincode query -C mychannel -n tracegoods -c '{"Args":["queryLogisticByGoodsId","94cdaa8576314e6bb4277c11bc3f0492"]}'
+peer chaincode query -C mychannel -n tracegoods -c '{"Args":["queryLogisticByGoodsId","5ca805675dc64b75a69b4ca0751fe556"]}'
 
 查询所有商品
 peer chaincode query -C mychannel -n tracegoods -c '{"Args":["queryAllGoods"]}'
@@ -43,3 +47,6 @@ peer chaincode invoke -C mychannel -n tracegoods -c '{"Args":["addLogistic","94c
 
 添加物流信息
 peer chaincode invoke -C mychannel -n tracegoods -c '{"Args":["addLogistic","94cdaa8576314e6bb4277c11bc3f0333","94cdaa8576314e6bb4277c11bc3f0492","ShangHai"]}'
+
+删除物流信息
+peer chaincode invoke -C mychannel -n tracegoods -c '{"Args":["deleteLogistic","aea6715d56034da89dbcb26fc7c9f8d6","5ca805675dc64b75a69b4ca0751fe556"]}'
