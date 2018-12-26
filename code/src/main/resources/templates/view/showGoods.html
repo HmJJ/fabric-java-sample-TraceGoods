@@ -92,7 +92,7 @@
 								<td class="col-xs-2" th:text="${goods.registerDate}">registerDate</td>
 								<td class="col-xs-2">
 									<a th:href="@{'/goods/findById?id='+${goods.id}}"><button class="btn btn-sm btn-info">详情</button></a>
-									<a th:href="@{'/goods/delete?id='+${goods.id}}"><button class="btn btn-sm btn-info">删除</button></a>
+									<button class="btn btn-sm btn-info" th:onclick="'javascript: deleteGoods(\'' + ${goods.id} + '\')'">删除</button>
 								</td>
 							</tr>
 						</div>
@@ -132,6 +132,28 @@
 				alert("Java内部应用错误");
 			}
 		});
+		
+		function deleteGoods(_goodsId){
+			$.ajax({
+				type:"post",
+		       dataType:"json",
+		       url:"/goods/delete",
+		       data:{
+		    	   id: _goodsId
+		       },
+		       success:function (data) {
+		    	   if(data.result) {
+		    		   alert(data.message);
+		    		   setTimeout(function() {
+		    			   window.location.href="/showGoods";
+		    	    	}, 1000);
+		    	   }
+		       },
+		       error:function(data){
+		   			alert("Connecte timeout"); 
+		       }
+		   });
+		}
 	</script>
 	
 </html>

@@ -222,11 +222,15 @@ public class GoodsController {
 	}
 
 	@RequestMapping(value = "delete")
-	public String delete(CommonRequestAttributes attributes, Model model, @RequestParam(value = "id", required = true) String id) {
-
+	@ResponseBody
+	public String delete(CommonRequestAttributes attributes, @RequestParam(value = "id", required = true) String id) {
+		CommonResponse retval = new CommonResponse();
+		
 		if (StringUtils.isBlank(id)) {
-			model.addAttribute("code", "40029");
-			model.addAttribute("message", "参数为空!");
+			retval.setMessage("参数为空!");
+			retval.setCode("40029");
+			retval.setResult(true);
+			return JSON.toJSONString(retval);
 		}
 
 		List<String> params = new ArrayList<>();
@@ -236,16 +240,21 @@ public class GoodsController {
 		JSONObject jsonObject = JSONObject.parseObject(jsonStr);
 		
 		if (Integer.parseInt(jsonObject.getString("status")) == 40029) {
-			model.addAttribute("message", "fabric错误，请检查设置以及智能合约！");
-			model.addAttribute("code", "40029");
+			retval.setMessage("fabric错误，请检查设置以及智能合约!");
+			retval.setCode("40029");
+			retval.setResult(true);
+			return JSON.toJSONString(retval);
 		} else if (Integer.parseInt(jsonObject.getString("status")) == 8) {
-			model.addAttribute("message", "fabric用户未登陆!");
-			model.addAttribute("code", "8");
+			retval.setMessage("fabric用户未登陆!");
+			retval.setCode("8");
+			retval.setResult(true);
+			return JSON.toJSONString(retval);
 		} else {
-			model.addAttribute("message", "删除成功!");
-			model.addAttribute("code", "200");
+			retval.setMessage("删除成功!");
+			retval.setCode("200");
 		}
+		retval.setResult(true);
 
-		return "view/showGoods";
+		return JSON.toJSONString(retval);
 	}
 }

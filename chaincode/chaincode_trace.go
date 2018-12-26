@@ -28,6 +28,12 @@ type Logistic struct {
 	Sort string          //排序
 }
 
+/* 定义序号实体 */
+type Sort struct {
+	SortKey string       //序号主键
+	SortNo int          	 //序号
+}
+
 /* 商品列表key */
 var goodsListKey = "sheep_goods_list"
 
@@ -106,6 +112,15 @@ func (t *TraceChaincode)addGoods(stub shim.ChaincodeStubInterface, args []string
 	goods := Goods{Id:id, Name:name, Price:price, RegisterDate:registerDate}
 	goodsbytes,_ := json.Marshal(goods)
 	err = stub.PutState(id, goodsbytes)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+
+	sortKey := id + "sort"
+	i := 0
+	sort := Sort{SortKey:sortKey, SortNo:i}
+	sortbytes,_ := json.Marshal(sort)
+	err = stub.PutState(sortKey, sortbytes)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -190,19 +205,26 @@ func (t *TraceChaincode)addLogistic(stub shim.ChaincodeStubInterface, args []str
 	id = args[0]
 	goodsId = args[1]
 	cityName = args[2]
-	i := 0
 
 	fmt.Printf("id = %s,goodsId=%s, price = %s, registerDate = %s\n", id, goodsId, cityName)
 
-	resultIterator, err := stub.GetStateByPartialCompositeKey("Goods~Logistic:", []string{goodsId})
-	defer resultIterator.Close()
-	for resultIterator.HasNext() {
-		item, _ := resultIterator.Next()
-		fmt.Printf("key=%s\n", item.Key)
-		i++
+	sortKey := goodsId + "sort"
+	sortbytes, err := stub.GetState(sortKey)
+	if err != nil {
+		return shim.Error("Failed to get state")
 	}
-
+	sortEntity := Sort{}
+	err  = json.Unmarshal(sortbytes, &sortEntity)
+	i := sortEntity.SortNo
+	i++
 	sort = strconv.Itoa(i)
+
+	newsortEntity := Sort{SortKey:sortKey, SortNo:i}
+	newsortbytes,_ := json.Marshal(newsortEntity)
+	err = stub.PutState(sortKey, newsortbytes)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
 
 	// Write the state to the ledger
 	logistic := Logistic{Id:id, GoodsId:goodsId, CityName:cityName, Sort:sort}

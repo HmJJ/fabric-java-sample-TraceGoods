@@ -46,14 +46,17 @@ public class LogisticController {
 			retval.setCode("500");
 			retval.setMessage("参数为空");
 		}
-		
 		List<String> params = new ArrayList<>();
+		JSONObject jsonObject = new JSONObject();
+		String jsonStr = "";
+		
+		params.clear();
 		params.add(Uuid.getUUID());
 		params.add(goodsId);
 		params.add(cityName);
-		String jsonStr = logisticService.add(attributes, params);
+		jsonStr = logisticService.add(attributes, params);
 		
-		JSONObject jsonObject = JSONObject.parseObject(jsonStr);
+		jsonObject = JSONObject.parseObject(jsonStr);
 		
 		if (Integer.parseInt(jsonObject.getString("status")) == 40029) {
 			retval.setMessage("fabric错误，请检查设置以及智能合约!");
