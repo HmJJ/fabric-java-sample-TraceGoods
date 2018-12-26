@@ -48,16 +48,27 @@ public class FabricController {
 
 		jsonObject = JSONObject.parseObject(jsonStr);
 
-		String result = jsonObject.getString("result");
+		if (Integer.parseInt(jsonObject.getString("status")) == 40029) {
+			retval.setMessage("fabric错误，请检查设置以及智能合约！");
+			retval.setCode("200");
+		} else if (Integer.parseInt(jsonObject.getString("status")) == 8) {
+			retval.setMessage("fabric用户未登陆!");
+			retval.setCode("200");
+		} else {
+			String result = jsonObject.getString("result");
+			
+			JSONArray resultArry = JSONArray.parseArray(result);
+			String goodsJson = resultArry.getString(1);
+			
+			Map<String, Object> map = new HashMap<>();
+			
+			map.put("result", goodsJson);
+			
+			retval.setData(map);
+			retval.setMessage("查询成功!");
+			retval.setCode("200");
+		}
 		
-		JSONArray resultArry = JSONArray.parseArray(result);
-		String goodsJson = resultArry.getString(1);
-		
-		Map<String, Object> map = new HashMap<>();
-		
-		map.put("result", goodsJson);
-		
-		retval.setData(map);
 		retval.setResult(true);
 		
 		return JSON.toJSONString(retval);

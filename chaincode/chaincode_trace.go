@@ -51,6 +51,9 @@ func (t *TraceChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	} else if function == "queryAllGoods" {
 		// the old "Query" is now implemtned in invoke
 		return t.queryAllGoods(stub, args)
+	} else if function == "queryAllAddedGoods" {
+		// the old "Query" is now implemtned in invoke
+		return t.queryAllAddedGoods(stub, args)
 	} else if function == "queryLogisticByGoodsId" {
 		// the old "Query" is now implemtned in invoke
 		return t.queryLogisticByGoodsId(stub, args)
@@ -187,28 +190,16 @@ func (t *TraceChaincode)addLogistic(stub shim.ChaincodeStubInterface, args []str
 	id = args[0]
 	goodsId = args[1]
 	cityName = args[2]
+	i := 0
 
 	fmt.Printf("id = %s,goodsId=%s, price = %s, registerDate = %s\n", id, goodsId, cityName)
 
-	logisticsMap := []Logistic{}
-	resultIterator, err := stub.GetStateByPartialCompositeKey("Goods~Logistic:", []string{id})
+	resultIterator, err := stub.GetStateByPartialCompositeKey("Goods~Logistic:", []string{goodsId})
 	defer resultIterator.Close()
-	i := 0
 	for resultIterator.HasNext() {
 		item, _ := resultIterator.Next()
 		fmt.Printf("key=%s\n", item.Key)
-		logisticJsonBytes, err := stub.GetState(item.Key)
-		if err != nil {
-			return shim.Error("Failed to get state")
-		}
-		logistic := Logistic{}
-	   	err  = json.Unmarshal(logisticJsonBytes, &logistic)
-		if err != nil {
-   			return shim.Error(err.Error())
-   		}
-
-	    logisticsMap = append(logisticsMap, logistic)
-	    i = i + 1
+		i++
 	}
 
 	sort = strconv.Itoa(i)

@@ -62,7 +62,7 @@ public class SimpleManager extends BaseManager {
         .setOrderers("example.com")
         .addOrderer("orderer.example.com", "grpc://47.244.142.213:7050")
         .setChannel("mychannel")
-        .setChainCode("tracegoods", "/opt/gopath", "github.com/hyperledger/fabric/sheep/chaincode/go/trace_goods", "1.0", 90000, 240)
+        .setChainCode("tracegoods", "/opt/gopath", "github.com/hyperledger/fabric/sheep/chaincode/go/trace_goods", "3.0", 90000, 240)
         .setBlockListener(map -> {
             logger.debug(map.get("code"));
             logger.debug(map.get("data"));

@@ -79,20 +79,25 @@ public class LogisticController {
 	public String modify(CommonRequestAttributes attributes,
 			@RequestParam(value="id", required=false) String id,
 			@RequestParam(value="goodsId") String goodsId,
-			@RequestParam(value="cityName") String cityName) {
+			@RequestParam(value="cityName") String cityName,
+			@RequestParam(value="sort") String sort) {
 		CommonResponse retval = new CommonResponse();
 		
 		if(StringUtils.isBlank(id)
 				|| StringUtils.isBlank(goodsId)
-				|| StringUtils.isBlank(cityName)) {
+				|| StringUtils.isBlank(cityName)
+				|| StringUtils.isBlank(sort)) {
 			retval.setCode("500");
 			retval.setMessage("参数为空");
+			retval.setResult(true);
+			return JSON.toJSONString(retval);
 		}
 		
 		List<String> params = new ArrayList<>();
 		params.add(id);
 		params.add(goodsId);
 		params.add(cityName);
+		params.add(sort);
 		String jsonStr = logisticService.modify(attributes, params);
 		
 		JSONObject jsonObject = JSONObject.parseObject(jsonStr);
@@ -130,8 +135,8 @@ public class LogisticController {
 		}
 
 		List<String> params = new ArrayList<>();
-		params.add(goodsId);
 		params.add(logisticId);
+		params.add(goodsId);
 		String jsonStr = logisticService.delete(attributes, params);
 		
 		JSONObject jsonObject = JSONObject.parseObject(jsonStr);
@@ -146,6 +151,7 @@ public class LogisticController {
 			map.put("message", "删除成功!");
 			map.put("code", "200");
 		}
+		retval.setData(map);
 		retval.setResult(true);
 		
 		return JSON.toJSONString(retval);
