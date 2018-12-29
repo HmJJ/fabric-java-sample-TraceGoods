@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.springboot.basic.support.CommonRequestAttributes;
 import com.springboot.basic.support.CommonResponse;
@@ -40,29 +39,40 @@ public class FabricController {
 		}
 
 		List<String> params = new ArrayList<>();
+		JSONObject prejsonObject = new JSONObject();
 		JSONObject jsonObject = new JSONObject();
 		String jsonStr = "";
+		String result = "";
+		Boolean status = false;
+		String message = "";
+		String data = "";
 		params.add(id);
 
 		jsonStr = goodsService.findById(attributes, params);
 
-		jsonObject = JSONObject.parseObject(jsonStr);
+		prejsonObject = JSONObject.parseObject(jsonStr);
 
-		if (Integer.parseInt(jsonObject.getString("status")) == 40029) {
+		if (Integer.parseInt(prejsonObject.getString("status")) == 40029) {
 			retval.setMessage("fabric错误，请检查设置以及智能合约！");
 			retval.setCode("200");
-		} else if (Integer.parseInt(jsonObject.getString("status")) == 8) {
+		} else if (Integer.parseInt(prejsonObject.getString("status")) == 8) {
 			retval.setMessage("fabric用户未登陆!");
 			retval.setCode("200");
 		} else {
-			String result = jsonObject.getString("result");
+			result = prejsonObject.getString("result");
+			jsonObject = JSONObject.parseObject(result);
+			status = jsonObject.getBoolean("Status");
+			message = jsonObject.getString("Message");
+			data = jsonObject.getString("Data");
 			
-			JSONArray resultArry = JSONArray.parseArray(result);
-			String goodsJson = resultArry.getString(1);
+//			JSONArray resultArry = JSONArray.parseArray(result);
+//			String goodsJson = resultArry.getString(1);
 			
 			Map<String, Object> map = new HashMap<>();
-			
-			map.put("result", goodsJson);
+
+			map.put("status", status);
+			map.put("message", message);
+			map.put("result", data);
 			
 			retval.setData(map);
 			retval.setMessage("查询成功!");

@@ -111,7 +111,7 @@
 		       },
 		       success:function (data) {
 		    	   if(data.code == 200) {
-		    		   alert(data.message);
+		    		   alert(data.data.message);
 		    	   }
 		    	   if(data.result) {
 		    		   $('#result').html(syntaxHighlight(data.data.result));
