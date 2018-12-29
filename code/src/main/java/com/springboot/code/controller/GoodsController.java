@@ -150,9 +150,9 @@ public class GoodsController {
 
 		List<String> params = new ArrayList<>();
 		JSONObject jsonObject = new JSONObject();
+		JSONObject result = new JSONObject();
 		String jsonStr = "";
-		String preArray = "";
-		JSONArray resultArry = new JSONArray();
+		String preresult = "";
 		params.add(id);
 
 		jsonStr = goodsService.findById(attributes, params);
@@ -166,17 +166,21 @@ public class GoodsController {
 			model.addAttribute("message", "fabric用户未登陆");
 			retval.setCode("200");
 		} else {
-			preArray = jsonObject.getString("result");
-
-			resultArry = JSONArray.parseArray(preArray);
-			String goodsJson = resultArry.getString(1);
+			preresult = jsonObject.getString("result");
+			
+			result = JSONObject.parseObject(preresult);
+			
+			String goodsJson = result.getString("Data");
+			
 			JSONObject goodsObject = JSONObject.parseObject(goodsJson);
 
 			Goods goods = new Goods();
 			goods.setId(goodsObject.getString("Id"));
 			goods.setName(goodsObject.getString("Name"));
 			goods.setPrice(goodsObject.getString("Price"));
-			goods.setRegisterDate(goodsObject.getString("RegisterDate").replace("/", "-"));
+			goods.setCreateDate(goodsObject.getString("CreateDate").replace("/", "-"));
+			goods.setModifyDate(goodsObject.getString("ModifyDate").replace("/", "-"));
+			goods.setSort(goodsObject.getInteger("Sort"));
 
 			model.addAttribute("goods", goods);
 			model.addAttribute("goodsId", id);
@@ -185,10 +189,11 @@ public class GoodsController {
 
 			jsonObject = JSONObject.parseObject(jsonStr);
 
-			preArray = jsonObject.getString("result");
+			preresult = jsonObject.getString("result");
+			
+			result = JSONObject.parseObject(preresult);
 
-			resultArry = JSONArray.parseArray(preArray);
-			String logisticArrayPre = resultArry.getString(1);
+			String logisticArrayPre = result.getString("Data");
 
 			JSONArray logicticArray = JSONArray.parseArray(logisticArrayPre);
 
@@ -200,6 +205,8 @@ public class GoodsController {
 				logictic.setId(logicticObject.getString("Id"));
 				logictic.setGoodsId(logicticObject.getString("GoodsId"));
 				logictic.setCityName(logicticObject.getString("CityName"));
+				logictic.setCreateDate(goodsObject.getString("CreateDate").replace("/", "-"));
+				logictic.setModifyDate(goodsObject.getString("ModifyDate").replace("/", "-"));
 				logictic.setSort(Integer.parseInt(logicticObject.getString("Sort")));
 				logicticList.add(logictic);
 			}

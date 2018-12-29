@@ -39,32 +39,35 @@ public class IndexController {
 		
 		String jsonStr = goodsService.findAll(attributes);
 		
-		JSONObject jsonObject = JSONObject.parseObject(jsonStr);
+		JSONObject prejsonObject = JSONObject.parseObject(jsonStr);
 		
-		if (Integer.parseInt(jsonObject.getString("status")) == 40029) {
+		if (Integer.parseInt(prejsonObject.getString("status")) == 40029) {
 			model.addAttribute("message", "fabric错误，请检查设置以及智能合约");
 			model.addAttribute("code", "40029");
-		} else if (Integer.parseInt(jsonObject.getString("status")) == 8) {
+		} else if (Integer.parseInt(prejsonObject.getString("status")) == 8) {
 			model.addAttribute("message", "fabric用户未登陆");
 			model.addAttribute("code", "8");
 		} else {
-			String txid = jsonObject.getString("txid");
-			String preArray = jsonObject.getString("result");
+			String txid = prejsonObject.getString("txid");
+			String preresult = prejsonObject.getString("result");
 			
-			JSONArray resultArry = JSONArray.parseArray(preArray);		
-			String goodsArrayPre = resultArry.getString(1);
+			JSONObject result = JSONObject.parseObject(preresult);
 			
-			JSONArray goodsArray = JSONArray.parseArray(goodsArrayPre);
+			String preArry = result.getString("Data");
+			
+			JSONArray resultArry = JSONArray.parseArray(preArry);
 			
 			List<Goods> goodsList = new ArrayList<Goods>();
 			
-			for(int i=0; i<goodsArray.size();i++) {
-				JSONObject goodsObject = goodsArray.getJSONObject(i);
+			for(int i=0; i<resultArry.size();i++) {
+				JSONObject goodsObject = resultArry.getJSONObject(i);
 				Goods goods = new Goods();
 				goods.setId(goodsObject.getString("Id"));
 				goods.setName(goodsObject.getString("Name"));
 				goods.setPrice(goodsObject.getString("Price"));
-				goods.setRegisterDate(goodsObject.getString("RegisterDate"));
+				goods.setCreateDate(goodsObject.getString("CreateDate"));
+				goods.setModifyDate(goodsObject.getString("ModifyDate"));
+				goods.setSort(goodsObject.getInteger("Sort"));
 				goodsList.add(goods);
 			}
 			
