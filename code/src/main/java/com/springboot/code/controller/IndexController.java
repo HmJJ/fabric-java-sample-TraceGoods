@@ -3,6 +3,8 @@ package com.springboot.code.controller;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.servlet.http.HttpSession;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -26,6 +28,15 @@ public class IndexController {
 	
 	@RequestMapping(value= {"/","","index"})
 	public String indexPage() {
+		return "index";
+	}
+	
+	@RequestMapping(value= "logout")
+	public String loginOut(CommonRequestAttributes attributes) {
+		
+		HttpSession session = attributes.getRequest().getSession();
+		session.setAttribute("user", null);
+		
 		return "index";
 	}
 	
