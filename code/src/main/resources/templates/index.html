@@ -176,7 +176,7 @@ $(".btn-register").click(function(){
 	    	   if(data.result){
 	    		   $('.success').addClass('alert alert-success').html(data.data.message);
 	    		   setTimeout(function(){
-	            	   window.location.href="/main";
+	            	   window.location.href="/index";
 	               },500);
 	    	   }else{    		   
 	           		shakeModal(data.data.message); 

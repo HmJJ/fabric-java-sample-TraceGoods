@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:v-on="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org"
+	xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3"
+	xmlns:layout="http://www.ultraq.net.nz/web/thymeleaf/layout"
+	th:remove="tag">
+<head>
+	<title>个人中心</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<meta name="viewport" content="width=device-width,height=device-height,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+	
+	<script th:src="@{/jquery-3.3.1/jquery-3.3.1.min.js}" type="text/javascript"></script>
+	<script th:src="@{/bootstrap-3.3.7-dist/js/bootstrap.min.js}" type="text/javascript"></script>
+	
+	<link rel="stylesheet" th:href="@{/bootstrap-3.3.7-dist/css/bootstrap.min.css}" type="text/css" />
+</head>
+<style>
+    pre {outline: 1px solid #ccc; padding: 5px; margin: 5px; }
+    .string { color: green; }
+    .number { color: darkorange; }
+    .boolean { color: blue; }
+    .null { color: magenta; }
+    .key { color: red; }
+</style>
+<body>
+	<nav class="navbar navbar-default">
+		<div class="container-fluid">
+			<!-- Brand and toggle get grouped for better mobile display -->
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle collapsed"
+					data-toggle="collapse" data-target="#bs-example-navbar-collapse-1"
+					aria-expanded="false">
+					<span class="sr-only">Toggle navigation</span> <span
+						class="icon-bar"></span> <span class="icon-bar"></span> <span
+						class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand" th:href="@{/main}">Sheep Mall</a>
+			</div>
+
+			<!-- Collect the nav links, forms, and other content for toggling -->
+			<div class="collapse navbar-collapse"
+				id="bs-example-navbar-collapse-1">
+				<ul class="nav navbar-nav">
+					<li><a th:href="@{/main}">首页 <span class="sr-only">(current)</span></a></li>
+					<li><a th:href="@{/showGoods}">商品</a></li>
+					<li th:if="${usertype gt 1}"><a th:href="@{/showFabric}">fabric</a></li>
+						<li th:if="${usertype gt 1}"><a th:href="@{/userlist}">用户</a></li>
+				</ul>
+				<ul class="nav navbar-nav navbar-right">
+					<li class="dropdown"><a href="#" class="dropdown-toggle"
+						data-toggle="dropdown" role="button" aria-haspopup="true"
+						aria-expanded="false"><span th:text="${user.name}"></span><span class="caret"></span></a>
+						<ul class="dropdown-menu">
+							<li><a th:href="@{/personal}">个人中心</a></li>
+							<li role="separator" class="divider"></li>
+							<li><a th:href="@{/logout}">退出登录</a></li>
+						</ul></li>
+				</ul>
+			</div>
+			<!-- /.navbar-collapse -->
+		</div>
+		<!-- /.container-fluid -->
+	</nav>
+
+	<div class="row">
+		<div class="col-xs-1"></div>
+		<div class="col-xs-11">
+			<label>个人信息</label>
+		</div>
+		<div class="col-xs-1"></div>
+		<div class="col-xs-2">
+			<label>用户名：</label>
+			<span id="name" th:text="${user == null || user.name == nul ? '' : user.name}"></span>
+		</div>
+		<div class="col-xs-2">
+			<label>密码：</label>
+			<span id="password" th:text="${user == null || user.password == nul ? '' : user.password}"></span>
+		</div>
+		<div class="col-xs-2">
+			<label>权限等级：</label>
+			<span id="level" th:text="${user == null || user.level == nul ? '' : user.level}"></span>
+		</div>
+		<div class="col-xs-2">
+			<label>注册时间：</label>
+			<span id="createDate" th:text="${user == null || user.createDate == nul ? '' : user.createDate}"></span>
+		</div>
+		<div class="col-xs-2">
+			<label>注册序号：</label>
+			<span id="sort" th:text="${user == null || user.sort == nul ? '' : user.sort}"></span>
+		</div>
+		<div class="col-xs-1"></div>
+	</div>
+	<hr />
+	<div class="row">
+		<div class="col-xs-1"></div>
+		<div class="col-xs-11" style="margin-bottom:20px;">
+			<label>可进行的操作</label>
+		</div>
+	</div>
+	<div class="row">
+		<div th:if="${usertype eq 1}">
+		</div>
+		<div th:if="${usertype eq 2 || usertype gt 2}">
+			<div>
+				<div class="col-xs-1"></div>
+				<div class="col-xs-2" style="text-align:right;">
+					<label>设置查询权限等级：</label>
+				</div>
+				<div class="col-xs-9" style="text-align:left;margin-bottom:20px;">
+					<input type="text" id="queryLevel" style="width:100px;" th:value="${queryLevel}" />
+					<button type="button" class="btn btn-primary query_modify_btn">修改</button>
+				</div>
+			</div>
+			<div>
+				<div class="col-xs-1"></div>
+				<div class="col-xs-2" style="text-align:right;">
+					<label>设置添加权限等级：</label>
+				</div>
+				<div class="col-xs-9" style="text-align:left;margin-bottom:20px;">
+					<input type="text" id="addLevel" style="width:100px;" th:value="${addLevel}" />
+					<button type="button" class="btn btn-primary add_modify_btn">修改</button>
+				</div>
+			</div>
+			<div>
+				<div class="col-xs-1"></div>
+				<div class="col-xs-2" style="text-align:right;">
+					<label>设置修改权限等级：</label>
+				</div>
+				<div class="col-xs-9" style="text-align:left;margin-bottom:20px;">
+					<input type="text" id="modifyLevel" style="width:100px;" th:value="${modifyLevel}" />
+					<button type="button" class="btn btn-primary modify_modify_btn">修改</button>
+				</div>
+			</div>
+		</div>
+		<div th:if="${usertype eq 3}">
+			<div>
+				<div class="col-xs-1"></div>
+				<div class="col-xs-2" style="text-align:right;">
+					<label>设置删除权限等级：</label>
+				</div>
+				<div class="col-xs-9" style="text-align:left;margin-bottom:20px;">
+					<input type="text" id="deleteLevel" style="width:100px;" th:value="${deleteLevel}" />
+					<button type="button" class="btn btn-primary delete_modify_btn">修改</button>
+				</div>
+			</div>
+			<div>
+				<div class="col-xs-1"></div>
+				<div class="col-xs-2" style="text-align:right;">
+					<label>设置管理员权限等级：</label>
+				</div>
+				<div class="col-xs-9" style="text-align:left;margin-bottom:20px;">
+					<input type="text" id="managerLevel" style="width:100px;" th:value="${managerLevel}" />
+					<button  type="button" class="btn btn-primary manager_modify_btn">修改</button>
+				</div>
+			</div>
+			<div>
+				<div class="col-xs-1"></div>
+				<div class="col-xs-2" style="text-align:right;">
+					<label>添加管理员账号：</label>
+				</div>
+				<div class="col-xs-9" style="text-align:left;margin-bottom:20px;">
+					<button type="button" class="btn btn-primary btn-default" data-toggle="modal" data-target="#addManagerModal">
+						添加
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<div class="modal fade" id="addManagerModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title">添加（未注册）管理员</h4>
+					</div>
+					<!-- <div class="modal-body"> -->
+						<form>
+							<div class="col-xs-6" style="margin-top:20px;margin-bottom:20px;">
+								<label>User Name</label>
+								<input type="text" id="newname" name="username" placeholder="USERNAME">
+							</div>
+							<div class="col-xs-6" style="margin-top:20px;margin-bottom:20px;">
+								<label>Password</label>
+								<input type="text" id="newpwd" name="password" placeholder="PASSWORD">
+							</div>
+						</form>
+					<!-- </div> -->
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+						<button type="button" class="btn btn-primary add_manager_btn">确定</button>
+					</div>
+				</div><!-- /.modal-content -->
+			</div><!-- /.modal-dialog -->
+		</div><!-- /.modal -->
+</body>
+
+<script th:inline="javascript">
+	$(document).ready(function() {
+		$(".query_modify_btn").click(function(){
+			var level = $("#queryLevel").val();
+			if(!level){
+				alert("参数不能为空！");
+			}
+			$.ajax({
+				type:"post",
+		       dataType:"json",
+		       url:"/user/setQueryLevel",
+		       data:{
+		    	   level: level
+		       },
+		       success:function (data) {
+		    	   console.log(data);
+		    	   if(data.result) {
+		    		   alert(data.message)
+		    		   $("#queryLevel").val(data.data["result"]);
+		    	   }else if (data.code == "406"){
+		    		   setTimeout(function() {
+		    			   window.location.replace="/";
+		    	    	}, 1000);
+		    	   } else {
+		    		   alert(data.message)
+		    	   }
+		       },
+		       error:function(data){
+		   			alert("Connecte timeout"); 
+		       }
+		   });
+		});
+		$(".add_modify_btn").click(function(){
+			var level = $("#addLevel").val();
+			if(!level){
+				alert("参数不能为空！");
+			}
+			$.ajax({
+				type:"post",
+		       dataType:"json",
+		       url:"/user/setAddLevel",
+		       data:{
+		    	   level: level
+		       },
+		       success:function (data) {
+		    	   console.log(data);
+		    	   if(data.result) {
+		    		   alert(data.message)
+		    		   $("#addLevel").val(data.data["result"]);
+		    	   }else if (data.code == "406"){
+		    		   setTimeout(function() {
+		    			   window.location.replace="/";
+		    	    	}, 1000);
+		    	   } else {
+		    		   alert(data.message)
+		    	   }
+		       },
+		       error:function(data){
+		   			alert("Connecte timeout"); 
+		       }
+		   });
+		});
+		$(".modify_modify_btn").click(function(){
+			var level = $("#modifyLevel").val();
+			if(!level){
+				alert("参数不能为空！");
+			}
+			$.ajax({
+				type:"post",
+		       dataType:"json",
+		       url:"/user/setModifyLevel",
+		       data:{
+		    	   level: level
+		       },
+		       success:function (data) {
+		    	   console.log(data);
+		    	   if(data.result) {
+		    		   alert(data.message)
+		    		   $("#modifyLevel").val(data.data["result"]);
+		    	   }else if (data.code == "406"){
+		    		   setTimeout(function() {
+		    			   window.location.replace="/";
+		    	    	}, 1000);
+		    	   } else {
+		    		   alert(data.message)
+		    	   }
+		       },
+		       error:function(data){
+		   			alert("Connecte timeout"); 
+		       }
+		   });
+		});
+		$(".delete_modify_btn").click(function(){
+			var level = $("#deleteLevel").val();
+			if(!level){
+				alert("参数不能为空！");
+			}
+			$.ajax({
+				type:"post",
+		       dataType:"json",
+		       url:"/user/setDeleteLevel",
+		       data:{
+		    	   level: level
+		       },
+		       success:function (data) {
+		    	   console.log(data);
+		    	   if(data.result) {
+		    		   alert(data.message)
+		    		   $("#deleteLevel").val(data.data["result"]);
+		    	   }else if (data.code == "406"){
+		    		   setTimeout(function() {
+		    			   window.location.replace="/";
+		    	    	}, 1000);
+		    	   } else {
+		    		   alert(data.message)
+		    	   }
+		       },
+		       error:function(data){
+		   			alert("Connecte timeout"); 
+		       }
+		   });
+		});
+		$(".manager_modify_btn").click(function(){
+			var level = $("#managerLevel").val();
+			if(!level){
+				alert("参数不能为空！");
+			}
+			$.ajax({
+				type:"post",
+		       dataType:"json",
+		       url:"/user/setManagerLevel",
+		       data:{
+		    	   level: level
+		       },
+		       success:function (data) {
+		    	   console.log(data);
+		    	   if(data.result) {
+		    		   alert(data.message)
+		    		   $("#managerLevel").val(data.data["result"]);
+		    	   }else if (data.code == "406"){
+		    		   setTimeout(function() {
+		    			   window.location.replace="/";
+		    	    	}, 1000);
+		    	   } else {
+		    		   alert(data.message)
+		    	   }
+		       },
+		       error:function(data){
+		   			alert("Connecte timeout"); 
+		       }
+		   });
+		});
+		$(".add_manager_btn").click(function(){
+			var username = $("#newname").val();
+			var password = $("#newpwd").val();
+			if(!username || !password){
+				alert("参数不能为空！");
+			}
+			$.ajax({
+				type:"post",
+		       dataType:"json",
+		       url:"/user/addManagerForNotExist",
+		       data:{
+		    	   name: username,
+		    	   password: password
+		       },
+		       success:function (data) {
+		    	   console.log(data);
+		    	   if(data.result) {
+		    		   alert(data.message)
+		    		   $("#addManagerModal").model("hide");
+		    	   }else if (data.code == "406"){
+		    		   setTimeout(function() {
+		    			   window.location.replace="/";
+		    	    	}, 1000);
+		    	   } else {
+		    		   alert(data.message)
+		    	   }
+		       },
+		       error:function(data){
+		   			alert("Connecte timeout"); 
+		       }
+		   });
+		});
+	});
+</script>
+
+</html>

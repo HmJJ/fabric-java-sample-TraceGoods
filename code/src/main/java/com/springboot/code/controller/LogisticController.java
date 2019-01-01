@@ -1,9 +1,12 @@
 package com.springboot.code.controller;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -18,6 +21,8 @@ import com.springboot.basic.support.CommonRequestAttributes;
 import com.springboot.basic.support.CommonResponse;
 import com.springboot.basic.utils.StringUtils;
 import com.springboot.basic.utils.Uuid;
+import com.springboot.basic.utils.time.DateUtils;
+import com.springboot.code.entity.User;
 import com.springboot.code.service.LogisticService;
 
 /**
@@ -34,6 +39,14 @@ public class LogisticController {
 	
 	Map<String, Object> map = new HashMap<>();
 	
+	/**
+	 * 添加物流信息
+	 * @param attributes
+	 * @param id
+	 * @param goodsId
+	 * @param cityName
+	 * @return
+	 */
 	@RequestMapping(value = "add")
 	@ResponseBody
 	public String add(CommonRequestAttributes attributes,
@@ -42,8 +55,18 @@ public class LogisticController {
 			@RequestParam(value="cityName") String cityName) {
 		CommonResponse retval = new CommonResponse();
 		
+		HttpSession session = attributes.getRequest().getSession();
+		User user = (User)session.getAttribute("user");
+		if(user == null) {
+			retval.setCode("406");
+			retval.setMessage("请登录");
+			retval.setResult(false);
+			return JSON.toJSONString(retval);
+		}
+		
 		if(StringUtils.isBlank(goodsId) || StringUtils.isBlank(cityName)) {
 			retval.setCode("500");
+			retval.setResult(false);
 			retval.setMessage("参数为空");
 		}
 		List<String> params = new ArrayList<>();
@@ -54,6 +77,12 @@ public class LogisticController {
 		params.add(Uuid.getUUID());
 		params.add(goodsId);
 		params.add(cityName);
+		Date date = new Date();
+		String createDate = "";
+		createDate = DateUtils.format(date, "yyyy/MM/dd");
+		params.add(createDate);
+		params.add(user.getName());
+		
 		jsonStr = logisticService.add(attributes, params);
 		
 		jsonObject = JSONObject.parseObject(jsonStr);
@@ -61,9 +90,11 @@ public class LogisticController {
 		if (Integer.parseInt(jsonObject.getString("status")) == 40029) {
 			retval.setMessage("fabric错误，请检查设置以及智能合约!");
 			retval.setCode("40029");
+			retval.setResult(false);
 		} else if (Integer.parseInt(jsonObject.getString("status")) == 8) {
 			retval.setMessage("fabric用户未登陆!");
 			retval.setCode("8");
+			retval.setResult(false);
 		} else {
 			map.clear();
 			map.put("logistic", params);
@@ -77,6 +108,15 @@ public class LogisticController {
 		return JSON.toJSONString(retval);
 	}
 	
+	/**
+	 * 修改物流信息
+	 * @param attributes
+	 * @param id
+	 * @param goodsId
+	 * @param cityName
+	 * @param sort
+	 * @return
+	 */
 	@RequestMapping(value = "modify")
 	@ResponseBody
 	public String modify(CommonRequestAttributes attributes,
@@ -86,13 +126,22 @@ public class LogisticController {
 			@RequestParam(value="sort") String sort) {
 		CommonResponse retval = new CommonResponse();
 		
+		HttpSession session = attributes.getRequest().getSession();
+		User user = (User)session.getAttribute("user");
+		if(user == null) {
+			retval.setCode("406");
+			retval.setMessage("请登录");
+			retval.setResult(false);
+			return JSON.toJSONString(retval);
+		}
+		
 		if(StringUtils.isBlank(id)
 				|| StringUtils.isBlank(goodsId)
 				|| StringUtils.isBlank(cityName)
 				|| StringUtils.isBlank(sort)) {
 			retval.setCode("500");
 			retval.setMessage("参数为空");
-			retval.setResult(true);
+			retval.setResult(false);
 			return JSON.toJSONString(retval);
 		}
 		
@@ -100,7 +149,12 @@ public class LogisticController {
 		params.add(id);
 		params.add(goodsId);
 		params.add(cityName);
-		params.add(sort);
+		params.add(user.getName());
+		Date date = new Date();
+		String modifyDate = "";
+		modifyDate = DateUtils.format(date, "yyyy/MM/dd");
+		params.add(modifyDate);
+		
 		String jsonStr = logisticService.modify(attributes, params);
 		
 		JSONObject jsonObject = JSONObject.parseObject(jsonStr);
@@ -108,9 +162,11 @@ public class LogisticController {
 		if (Integer.parseInt(jsonObject.getString("status")) == 40029) {
 			retval.setMessage("fabric错误，请检查设置以及智能合约!");
 			retval.setCode("40029");
+			retval.setResult(false);
 		} else if (Integer.parseInt(jsonObject.getString("status")) == 8) {
 			retval.setMessage("fabric用户未登陆!");
 			retval.setCode("8");
+			retval.setResult(false);
 		} else {
 			map.clear();
 			map.put("logistic", params);
@@ -124,6 +180,14 @@ public class LogisticController {
 		return JSON.toJSONString(retval);
 	}
 	
+	/**
+	 * 删除物流信息
+	 * @param attributes
+	 * @param model
+	 * @param goodsId
+	 * @param logisticId
+	 * @return
+	 */
 	@RequestMapping(value = "delete")
 	@ResponseBody
 	public String delete(CommonRequestAttributes attributes, Model model,
@@ -132,30 +196,43 @@ public class LogisticController {
 		
 		CommonResponse retval = new CommonResponse();
 		
+		HttpSession session = attributes.getRequest().getSession();
+		User user = (User)session.getAttribute("user");
+		if(user == null) {
+			retval.setCode("406");
+			retval.setMessage("请登录");
+			retval.setResult(false);
+			return JSON.toJSONString(retval);
+		}
+		
 		if(StringUtils.isBlank(goodsId) || StringUtils.isBlank(logisticId)) {
-			map.put("message", "参数为空!");
-			map.put("code", "500");
+			retval.setCode("500");
+			retval.setMessage("参数为空!");
+			retval.setResult(false);
 		}
 
 		List<String> params = new ArrayList<>();
 		params.add(logisticId);
 		params.add(goodsId);
+		params.add(user.getName());
+		
 		String jsonStr = logisticService.delete(attributes, params);
 		
 		JSONObject jsonObject = JSONObject.parseObject(jsonStr);
 		
 		if (Integer.parseInt(jsonObject.getString("status")) == 40029) {
-			map.put("message", "fabric错误，请检查设置以及智能合约");
-			map.put("code", "40029");
+			retval.setCode("40029");
+			retval.setMessage("fabric错误，请检查设置以及智能合约!");
+			retval.setResult(false);
 		} else if (Integer.parseInt(jsonObject.getString("status")) == 8) {
-			map.put("message", "fabric用户未登陆!");
-			map.put("code", "8");
+			retval.setCode("8");
+			retval.setMessage("fabric用户未登陆!");
+			retval.setResult(false);
 		} else {
-			map.put("message", "删除成功!");
-			map.put("code", "200");
+			retval.setCode("200");
+			retval.setMessage("删除成功!");
+			retval.setResult(true);
 		}
-		retval.setData(map);
-		retval.setResult(true);
 		
 		return JSON.toJSONString(retval);
 	}

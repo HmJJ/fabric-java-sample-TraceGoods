@@ -48,14 +48,17 @@
 				<ul class="nav navbar-nav">
 					<li><a th:href="@{/main}">首页 <span class="sr-only">(current)</span></a></li>
 					<li><a th:href="@{/showGoods}">商品</a></li>
-					<li><a th:href="@{/showFabric}">fabric</a></li>
+					<li th:if="${usertype gt 1}"><a th:href="@{/showFabric}">fabric</a></li>
+						<li th:if="${usertype gt 1}"><a th:href="@{/userlist}">用户</a></li>
 				</ul>
 				<ul class="nav navbar-nav navbar-right">
 					<li class="dropdown"><a href="#" class="dropdown-toggle"
 						data-toggle="dropdown" role="button" aria-haspopup="true"
-						aria-expanded="false">个人中心 <span class="caret"></span></a>
+						aria-expanded="false">
+						<span th:text="${user.name}"></span>
+						<span class="caret"></span></a>
 						<ul class="dropdown-menu">
-							<li><a href="#">个人资料</a></li>
+							<li><a th:href="@{/personal}">个人信息</a></li>
 							<li role="separator" class="divider"></li>
 							<li><a th:href="@{/logout}">退出登录</a></li>
 						</ul></li>
@@ -110,11 +113,15 @@
 		    	   id: id
 		       },
 		       success:function (data) {
-		    	   if(data.code == 200) {
-		    		   alert(data.data.message);
-		    	   }
 		    	   if(data.result) {
-		    		   $('#result').html(syntaxHighlight(data.data.result));
+		    		   $('#result').html(syntaxHighlight(data.data));
+		    	   } else if (data.code == "406") {
+		    		   alert(data.message);
+		    		   setTimeout(function() {
+		    			   window.location.replace="/";
+		    	    	}, 1000);
+		    	   } else {
+		    		   alert(data.message);
 		    	   }
 		       },
 		       error:function(data){

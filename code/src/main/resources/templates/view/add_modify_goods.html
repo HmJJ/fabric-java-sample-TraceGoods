@@ -35,14 +35,17 @@
 					<ul class="nav navbar-nav">
 						<li><a th:href="@{/main}">首页 <span class="sr-only">(current)</span></a></li>
 						<li><a th:href="@{/showGoods}">商品</a></li>
-						<li><a th:href="@{/showFabric}">fabric</a></li>
+						<li th:if="${usertype gt 1}"><a th:href="@{/showFabric}">fabric</a></li>
+						<li th:if="${usertype gt 1}"><a th:href="@{/userlist}">用户</a></li>
 					</ul>
 					<ul class="nav navbar-nav navbar-right">
 						<li class="dropdown">
-							<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">个人中心
+							<a href="#" class="dropdown-toggle" data-toggle="dropdown" 
+							role="button" aria-haspopup="true" aria-expanded="false">
+								<span th:text="${user.name}"></span>
 								<span class="caret"></span></a>
 							<ul class="dropdown-menu">
-								<li><a href="#">个人资料</a></li>
+								<li><a th:href="@{/personal}">个人信息</a></li>
 								<li role="separator" class="divider"></li>
 								<li><a th:href="@{/logout}">退出登录</a></li>
 							</ul>
@@ -74,19 +77,19 @@
 				<form id="goodsForm">
 					<div class="col-xs-3">
 						<label>ID</label>
-						<input type="text" readonly="readonly" class="form-control" id="goodsId" name="goodsId" placeholder="ID" th:value="${goods.id}">
+						<input type="text" readonly="readonly" class="form-control" id="goodsId" name="goodsId" placeholder="ID" th:value="${goods == null || goods.id == nul ? '' : goods.id}">
 					</div>
 					<div class="col-xs-3">
 						<label>Name</label>
-						<input type="text" class="form-control" id="name" name="name" placeholder="NAME" th:value="${goods.name}">
+						<input type="text" class="form-control" id="name" name="name" placeholder="NAME" th:value="${goods == null || goods.name == nul ? '' : goods.name}">
 					</div>
 					<div class="col-xs-3">
 						<label>Price (￥)</label>
-						<input type="text" class="form-control" id="price" name="price" placeholder="PRICE" th:value="${goods.price}">
+						<input type="text" class="form-control" id="price" name="price" placeholder="PRICE" th:value="${goods == null || goods.price == nul ? '' : goods.price}">
 					</div>
 					<div class="col-xs-3">
-						<label>Register Date</label>
-						<input type="date" class="form-control" id="registerDate" name="registerDate" th:value="${goods.registerDate}">
+						<label>Create Date</label>
+						<input type="date" class="form-control" id="createDate" name="createDate" th:value="${goods == null || goods.createDate == nul ? '' : goods.createDate}">
 					</div>
 					<div class="col-xs-2"></div>
 				</form>
@@ -123,13 +126,13 @@
 						<div th:if="${logistics != null}" th:each="logistic,start : ${logistics}">
 							<tr>
 								<th class="col-xs-2" th:text="${start.count}">num</th>
-								<td class="col-xs-5" th:text="${logistic.id}">id</td>
-								<td class="col-xs-2" th:text="${logistic.cityName}">cityName</td>
+								<td class="col-xs-5" th:text="${logistic == null || logistic.id == null ? '' : logistic.id}">id</td>
+								<td class="col-xs-2" th:text="${logistic == null || logistic.cityName == null ? '' : logistic.cityName}">cityName</td>
 								<td class="col-xs-3">
 									<button type="button" class="btn btn-primary btn-default logistic_modify" data-toggle="modal" data-target="#modifyModal" th:onclick="'javascript: logisticModify(\'' + ${logistic.id} + '\', \'' + ${logistic.cityName} + '\', \'' + ${goodsId} + '\', \'' + ${logistic.sort} + '\')'">
 										修改
 									</button>
-									<button class="btn btn-sm btn-info" th:onclick="'javascript:logisticDel(\'' + ${logistic.id} + '\', \'' + ${goods.id} + '\')'">删除</button>
+									<button class="btn btn-sm btn-danger" th:onclick="'javascript:logisticDel(\'' + ${logistic == null || logistic.id == null ? '' : logistic.id} + '\', \'' + ${goods == null || goods.id == nul ? '' : goods.id} + '\')'">删除</button>
 								</td>
 							</tr>
 						</div>
@@ -151,7 +154,7 @@
 								<label>ID</label>
 								<input type="text" id="logisticId" name="logisticId" placeholder="ID">
 							</div>
-							<div class="col-xs-12">
+							<div class="col-xs-12" style="margin-top:20px;margin-bottom:20px;">
 								<label>CityName</label>
 								<input type="text" id="cityName" name="cityName" placeholder="CITYNAME">
 							</div>
@@ -174,7 +177,7 @@
 					</div>
 					<!-- <div class="modal-body"> -->
 						<form>
-							<div class="col-xs-12">
+							<div class="col-xs-12" style="margin-top:20px;margin-bottom:20px;">
 								<label>CityName</label>
 								<input type="text" id="newcityName" name="cityName" placeholder="CITYNAME">
 							</div>
@@ -195,6 +198,8 @@
 			var goodsId = [[${goodsId}]];
 			if(!goodsId) {
 				$(".logistic_add").attr("disabled", true);
+			} else {
+				$("#createDate").attr("readonly", true);
 			}
 			var logisticId = "";
 			
@@ -203,8 +208,8 @@
 				var id = $("#goodsId").val();
 				var name = $("#name").val();
 				var price = $("#price").val();
-				var registerDate = $("#registerDate").val();
-				if(!name || !price || !registerDate) {
+				var createDate = $("#createDate").val();
+				if(!name || !price || !createDate) {
 					alert("请完善参数.");
 					return;
 				}
@@ -225,14 +230,21 @@
 				    	   id: id,
 				    	   name: name,
 				    	   price: price,
-				    	   registerDate: registerDate
+				    	   createDate: createDate
 				       },
 				       success:function (data) {
 				    	   if(data.result) {
 				    		   alert(data.message);
 				    		   setTimeout(function() {
-				    			   window.location.href="/goods/findById?id="+data.data.id;
+				    			   window.location.href="/goods/findById?id="+data.data["Id"];
 				    	    	}, 1000);
+				    	   } else if (data.code == "406") {
+				    		   alert(data.message);
+				    		   setTimeout(function() {
+				    			   window.location.replace="/";
+				    	    	}, 1000);
+				    	   } else {
+				    		   alert(data.message);
 				    	   }
 				       },
 				       error:function(data){
@@ -259,10 +271,16 @@
 				       },
 				       success:function (data) {
 				    	   if(data.result) {
-				    		   alert(data.message);
 				    		   setTimeout(function() {
 				    			   window.location.href="/goods/findById?id="+goodsId;
 				    	    	}, 1000);
+				    	   } else if (data.code == "406") {
+				    		   alert(data.message);
+				    		   setTimeout(function() {
+				    			   window.location.replace="/";
+				    	    	}, 1000);
+				    	   } else {
+				    		   alert(data.message);
 				    	   }
 				       },
 				       error:function(data){
@@ -296,10 +314,16 @@
 		       },
 		       success:function (data) {
 		    	   if(data.result) {
-		    		   alert(data.message);
 		    		   setTimeout(function() {
 		    			   window.location.href="/goods/findById?id="+goodsId;
 		    	    	}, 1000);
+		    	   } else if (data.code == "406") {
+		    		   alert(data.message);
+		    		   setTimeout(function() {
+		    			   window.location.replace="/";
+		    	    	}, 1000);
+		    	   } else {
+		    		   alert(data.message);
 		    	   }
 		       },
 		       error:function(data){
@@ -319,10 +343,17 @@
 		       },
 		       success:function (data) {
 		    	   if(data.result) {
-		    		   alert(data.data["message"]);
+		    		   alert(data.message);
 		    		   setTimeout(function() {
 		    			   window.location.href="/goods/findById?id="+_goodsId;
 		    	    	}, 1000);
+		    	   } else if (data.code == "406") {
+		    		   alert(data.message);
+		    		   setTimeout(function() {
+		    			   window.location.replace="/";
+		    	    	}, 1000);
+		    	   } else {
+		    		   alert(data.message);
 		    	   }
 		       },
 		       error:function(data){

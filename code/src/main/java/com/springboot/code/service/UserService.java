@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONObject;
+import com.springboot.code.entity.User;
 import com.springboot.fabric.interactive.service.SimpleService;
 
 /**
@@ -19,6 +20,7 @@ import com.springboot.fabric.interactive.service.SimpleService;
 public class UserService {
 	
 	@Autowired private SimpleService simpleService;
+	@Autowired private FabricService fabricService;
 
 	Map<String, Object> map = new HashMap<>();
 	
@@ -92,7 +94,30 @@ public class UserService {
 	}
 
 	/**
-	 * 给用户设置权限（已注册用户）
+	 * 删除用户
+	 * @param params
+	 * @return
+	 */
+	public String delete(List<String> params) {
+		
+		map.put("type", "invoke");
+		map.put("fcn", "deleteUser");
+
+		int length = params.size();
+        String[] argArray = new String[length];
+        for (int i = 0; i < length; i++) {
+            argArray[i] = params.get(i);
+        }
+		
+		map.put("array", argArray);
+		//链中执行
+		String jsonStr=simpleService.chainCode(new JSONObject(map));
+		
+		return jsonStr;
+	}
+
+	/**
+	 * 添加管理员（已注册用户）
 	 * @param params
 	 * @return
 	 */
@@ -115,7 +140,7 @@ public class UserService {
 	}
 
 	/**
-	 * 给用户设置权限（未注册用户）
+	 * 添加管理员（未注册用户）
 	 * @param params
 	 * @return
 	 */
@@ -138,7 +163,7 @@ public class UserService {
 	}
 
 	/**
-	 * 添加管理员
+	 * 给用户设置权限等级
 	 * @param params
 	 * @return
 	 */
@@ -273,6 +298,44 @@ public class UserService {
 		String jsonStr=simpleService.chainCode(new JSONObject(map));
 		
 		return jsonStr;
+	}
+	
+	/**
+	 * 判断用户等级
+	 */
+	public Integer getUserType(User user) {
+		
+		int usertype = 0;
+		
+		String jsonStr = fabricService.findByKey("sheep_manager_level");
+		
+		JSONObject prejsonObject = JSONObject.parseObject(jsonStr);
+		
+		if (Integer.parseInt(prejsonObject.getString("status")) == 40029) {
+			usertype = 0;
+		} else if (Integer.parseInt(prejsonObject.getString("status")) == 8) {
+			usertype = 0;
+		} else {
+			String preresult = prejsonObject.getString("result");
+			
+			JSONObject result = JSONObject.parseObject(preresult);
+			
+			String preQX = result.getString("Data");
+			
+			JSONObject QX = JSONObject.parseObject(preQX);
+			
+			int level = QX.getInteger("Level");
+			
+			if(user.getLevel() > level) {
+				usertype = 3;
+			} else if (user.getLevel() == level) {
+				usertype = 2;
+			} else {
+				usertype = 1;
+			}
+		}
+		
+		return usertype;
 	}
 	
 }

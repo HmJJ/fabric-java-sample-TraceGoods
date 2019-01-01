@@ -42,12 +42,19 @@ public class GoodsService {
 		
 	}
 
-	public String findAll(CommonRequestAttributes attributes) {
+	public String findAll(CommonRequestAttributes attributes, List<String> params) {
 
 		Map<String, Object> map = new HashMap<>();
 		map.put("type", "query");
 		map.put("fcn", "queryAllGoods");
-		map.put("array", new String[] {});
+		
+		int length = params.size();
+        String[] argArray = new String[length];
+        for (int i = 0; i < length; i++) {
+            argArray[i] = params.get(i);
+        }
+		
+		map.put("array", argArray);
 		//链中执行
 		String jsonStr=simpleService.chainCode(new JSONObject(map));
 		
@@ -58,7 +65,7 @@ public class GoodsService {
 
 		Map<String, Object> map = new HashMap<>();
 		map.put("type", "query");
-		map.put("fcn", "query");
+		map.put("fcn", "queryGoodsById");
 		
 		int length = params.size();
         String[] argArray = new String[length];

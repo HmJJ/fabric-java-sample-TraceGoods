@@ -5,7 +5,7 @@
 	xmlns:layout="http://www.ultraq.net.nz/web/thymeleaf/layout"
 	th:remove="tag">
 	<head>
-		<title>INDEX</title>
+		<title>用户</title>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 		<meta name="viewport" content="width=device-width,height=device-height,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
 		
@@ -60,12 +60,11 @@
 
 			<div class="row title">
 				<div class="col-xs-2">
-					<span class="title_word">商品一览</span>
+					<span class="title_word">用户一览</span>
 				</div>
 				<div class="col-xs-7">
 				</div>
-				<div class="col-xs-1" style="text-align: right;">
-					<a th:href="@{/goods/toAdd}"><button class="btn btn-default">新增</button></a>
+				<div class="col-xs-1">
 				</div>
 				<div class="col-xs-1" style="text-align: left;">
 					<button class="btn btn-default" onclick="javascript:history.back(-1);">返回</button>
@@ -79,24 +78,26 @@
 					<thead>
 						<tr>
 							<th class="col-xs-2">#</th>
-							<th class="col-xs-2">商品编号 ID</th>
-							<th class="col-xs-2">商品名称 Name</th>
-							<th class="col-xs-2">商品价格 Price(￥)</th>
-							<th class="col-xs-2">添加日期 Register Date</th>
+							<th class="col-xs-2">用户名</th>
+							<th class="col-xs-2">注册时间</th>
+							<th class="col-xs-2">权限等级</th>
+							<th class="col-xs-2">注册编号</th>
 							<th class="col-xs-2">#</th>
 						</tr>
 					</thead>
 					<tbody>
-						<div th:if="${goodsInfo != null}" th:each="goods,start : ${goodsInfo}">
+						<div th:if="${usersInfo != null}" th:each="user,start : ${usersInfo}">
 							<tr>
 								<th class="col-xs-2" th:text="${start.count}">num</th>
-								<td class="col-xs-2" th:text="${goods.id}">id</td>
-								<td class="col-xs-2" th:text="${goods.name}">name</td>
-								<td class="col-xs-2" th:text="${goods.price}">price</td>
-								<td class="col-xs-2" th:text="${goods.createDate}">registerDate</td>
+								<td class="col-xs-2" th:text="${user.name}">name</td>
+								<td class="col-xs-2" th:text="${user.createDate}">Create Date</td>
+								<td class="col-xs-2" th:text="${user.level}">level</td>
+								<td class="col-xs-2" th:text="${user.sort}">No.</td>
 								<td class="col-xs-2">
-									<a th:href="@{'/goods/findById?id='+${goods.id}}"><button class="btn btn-sm btn-info">详情</button></a>
-									<button class="btn btn-sm btn-danger" th:onclick="'javascript: deleteGoods(\'' + ${goods.id} + '\')'">删除</button>
+									<button th:if="${user.name != 'admin'}" type="button" class="btn btn-primary btn-default" data-toggle="modal" data-target="#detailModal" th:onclick="'javascript: detail(\'' + ${user.name} + '\',\'' + ${user.level} + '\',\'' + ${user.password} + '\')'">
+										设置权限
+									</button>
+									<button th:if="${usertype gt 2 && user.name != 'admin'}" class="btn btn-sm btn-danger" th:onclick="'javascript: deleteUser(\'' + ${user.name} + '\')'">删除</button>
 								</td>
 							</tr>
 						</div>
@@ -122,6 +123,56 @@
 
 		</div>
 
+		<div class="modal fade" id="detailModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title">权限设置</h4>
+					</div>
+					<!-- <div class="modal-body"> -->
+						<form class="row" style="text-align:center;">
+							<div class="col-xs-12" style="margin-top:20px;margin-bottom:20px;">
+								<label>Level</label>
+								<input type="text" id="newlevel" name="newlevel" placeholder="LEVEL">
+							</div>
+							<div class="col-xs-3" style="margin-top:20px;margin-bottom:20px;">
+								<label>查看权限：</label>
+								<span style="width:50px;" th:text="${queryLevel}"></span>
+							</div>
+							<div class="col-xs-3" style="margin-top:20px;margin-bottom:20px;">
+								<label>添加权限：</label>
+								<span style="width:50px;" th:text="${addLevel}"></span>
+							</div>
+							<div class="col-xs-3" style="margin-top:20px;margin-bottom:20px;">
+								<label>修改权限：</label>
+								<span style="width:50px;" th:text="${modifyLevel}"></span>
+							</div>
+							<div th:if="${usertype gt 2}" class="col-xs-3" style="margin-top:20px;margin-bottom:20px;">
+								<label>删除权限：</label>
+								<span style="width:50px;" th:text="${deleteLevel}"></span>
+							</div>
+							<div th:if="${usertype gt 2}" class="col-xs-3" style="margin-top:20px;margin-bottom:20px;">
+								<label>管理员权限：</label>
+								<span style="width:50px;" th:text="${managerLevel}"></span>
+							</div>
+							<div th:if="${usertype gt 2}" class="col-xs-3" style="margin-top:20px;margin-bottom:20px;">
+								<label>用户名：</label>
+								<span id="username" style="width:50px;"></span>
+							</div>
+							<div th:if="${usertype gt 2}" class="col-xs-3" style="margin-top:20px;margin-bottom:20px;">
+								<label>密码：</label>
+								<span id="userpwd" style="width:50px;"></span>
+							</div>
+						</form>
+					<!-- </div> -->
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+						<button type="button" class="btn btn-primary user_modify_confirm">确定</button>
+					</div>
+				</div><!-- /.modal-content -->
+			</div><!-- /.modal-dialog -->
+		</div><!-- /.modal -->
 	</body>
 	
 	<script th:inline="javascript">
@@ -142,37 +193,78 @@
 			$(".prev_btn").click(function(){
 				if (pageNum > 1) {
 					var newPageNum = pageNum - 1;
-					window.location.href="/goods/findByPage?pageNum="+newPageNum+"&pageSize="+pageSize;
+					window.location.href="/user/findByPage?pageNum="+newPageNum+"&pageSize="+pageSize;
 				}
 			});
 			$(".next_btn").click(function(){
 				totalPage = Math.ceil(total/pageSize);
 				if(pageNum < totalPage){
 					var newPageNum = pageNum + 1;
-					window.location.href="/goods/findByPage?pageNum="+newPageNum+"&pageSize="+pageSize;
+					window.location.href="/user/findByPage?pageNum="+newPageNum+"&pageSize="+pageSize;
 				}
 			});
 		});
+		var name = "";
+		function detail(_name, _level, _password) {
+			$("#newlevel").val(_level);
+			name = _name;
+			$("#username").text(_name);
+			$("#userpwd").text(_password);
+		}
 		
-		function deleteGoods(_goodsId){
+		$(".user_modify_confirm").click(function(){
+			var level = $("#newlevel").val();
+			if(!level){
+				alert("参数不能为空！")
+			}
 			$.ajax({
-				type:"post",
+			   type:"post",
 		       dataType:"json",
-		       url:"/goods/delete",
+		       url:"/user/setUserLevel",
 		       data:{
-		    	   id: _goodsId
+		    	   name: name,
+		    	   level: level
 		       },
 		       success:function (data) {
 		    	   if(data.result) {
 		    		   alert(data.message);
 		    		   setTimeout(function() {
-		    			   window.location.href="/showGoods";
+		    			   window.location.href="/userlist";
 		    	    	}, 1000);
 		    	   } else if (data.code == "406") {
 		    		   alert(data.message);
 		    		   setTimeout(function() {
-		    			   window.location.replace="/";
+		    			   window.location.replace="/index";
+		    	    	}, 500);
+		    	   } else {
+		    		   alert(data.message);
+		    	   }
+		       },
+		       error:function(data){
+		   			alert("Connecte timeout"); 
+		       }
+		   });
+		});
+		
+		function deleteUser(_name){
+			$.ajax({
+				type:"post",
+		       dataType:"json",
+		       url:"/user/deleteUser",
+		       data:{
+		    	   name: _name
+		       },
+		       success:function (data) {
+		    	   if(data.result) {
+		    		   alert(data.message);
+		    		   setTimeout(function() {
+		    			   window.location.href="/userlist";
 		    	    	}, 1000);
+		    	   } else if (data.code == "406") {
+		    		   alert(data.message);
+		    		   setTimeout(function() {
+		    			   window.location.replace="/index";
+		    	    	}, 500);
 		    	   } else {
 		    		   alert(data.message);
 		    	   }
@@ -182,6 +274,7 @@
 		       }
 		   });
 		}
+		
 	</script>
 	
 </html>
