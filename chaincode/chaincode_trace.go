@@ -48,11 +48,26 @@ type Sort struct {
 	SortNo int           //序号
 }
 
+/* 定义权限等级实体 */
+type QX struct {
+	Level int            //等级
+}
+
 /* 定义返回结果实体 */
 type Result struct {
 	Status bool       	 //序号主键
 	Message string       //序号
 	Data string 		 //数据
+}
+
+/* 定义分页返回结果实体 */
+type PageResult struct {
+	Status bool       	 //序号主键
+	Message string       //序号
+	Data string 		 //数据
+	PageNum int          //页码
+	PageSize int         //每个个数
+	Total int            //总数
 }
 
 /* 用户列表key */
@@ -85,7 +100,7 @@ func (t *TraceChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response {
 	var err error
 
 	if len(args) != 2 {
-		return shim.Error("Incorrect number of arguments. Expecting name of the person to query")
+		return shim.Error("Incorrect number of arguments. Expecting name and password")
 	}
 
 	// Initialize the chaincode
@@ -127,7 +142,7 @@ func (t *TraceChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response {
 	}
 
 	// 初始化查看权限等级
-	queryLevel := 0
+	queryLevel := QX{Level:0}
 	queryLevelBytes,_ := json.Marshal(queryLevel)
 	err = stub.PutState(queryLevelKey, queryLevelBytes)
 	if err != nil {
@@ -135,7 +150,7 @@ func (t *TraceChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response {
 	}
 
 	// 初始化添加权限等级
-	addLevel := 0
+	addLevel := QX{Level:0}
 	addLevelBytes,_ := json.Marshal(addLevel)
 	err = stub.PutState(addLevelKey, addLevelBytes)
 	if err != nil {
@@ -143,7 +158,7 @@ func (t *TraceChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response {
 	}
 
 	// 初始化修改权限等级
-	modifyLevel := 0
+	modifyLevel := QX{Level:0}
 	modifyLevelBytes,_ := json.Marshal(modifyLevel)
 	err = stub.PutState(modifyLevelKey, modifyLevelBytes)
 	if err != nil {
@@ -151,7 +166,7 @@ func (t *TraceChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response {
 	}
 
 	// 初始化删除权限等级
-	deleteLevel := 0
+	deleteLevel := QX{Level:0}
 	deleteLevelBytes,_ := json.Marshal(deleteLevel)
 	err = stub.PutState(deleteLevelKey, deleteLevelBytes)
 	if err != nil {
@@ -159,7 +174,7 @@ func (t *TraceChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response {
 	}
 
 	// 初始化管理员权限等级
-	managerLevel := 11
+	managerLevel := QX{Level:11}
 	managerLevelBytes,_ := json.Marshal(managerLevel)
 	err = stub.PutState(managerLevelKey, managerLevelBytes)
 	if err != nil {
@@ -174,52 +189,40 @@ func (t *TraceChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	fmt.Println("the_dragon Invoke")
 	function, args := stub.GetFunctionAndParameters()
 	if function == "invoke" {
-		// Make payment of X units from A to B
 		return t.invoke(stub, args)
 	} else if function == "login" {
-		// the old "Query" is now implemtned in invoke
 		return t.login(stub, args)
 	} else if function == "register" {
-		// the old "Query" is now implemtned in invoke
 		return t.register(stub, args)
 	} else if function == "addManagerForExist" {
-		// the old "Query" is now implemtned in invoke
 		return t.addManagerForExist(stub, args)
 	} else if function == "addManagerForNotExist" {
-		// the old "Query" is now implemtned in invoke
 		return t.addManagerForNotExist(stub, args)
 	} else if function == "addManager" {
-		// the old "Query" is now implemtned in invoke
 		return t.addManager(stub, args)
 	} else if function == "setManagerLevel" {
-		// the old "Query" is now implemtned in invoke
 		return t.setManagerLevel(stub, args)
 	} else if function == "setAddLevel" {
-		// the old "Query" is now implemtned in invoke
 		return t.setAddLevel(stub, args)
 	} else if function == "setModifyLevel" {
-		// the old "Query" is now implemtned in invoke
 		return t.setModifyLevel(stub, args)
 	} else if function == "setQueryLevel" {
-		// the old "Query" is now implemtned in invoke
 		return t.setQueryLevel(stub, args)
 	} else if function == "setDeleteLevel" {
-		// the old "Query" is now implemtned in invoke
 		return t.setDeleteLevel(stub, args)
 	} else if function == "query" {
-		// the old "Query" is now implemtned in invoke
 		return t.query(stub, args)
+	} else if function == "queryWithLevel" {
+		return t.queryWithLevel(stub, args)
 	} else if function == "queryAllUser" {
-		// the old "Query" is now implemtned in invoke
 		return t.queryAllUser(stub, args)
+	} else if function == "queryGoodsById" {
+		return t.queryGoodsById(stub, args)
 	} else if function == "queryAllGoods" {
-		// the old "Query" is now implemtned in invoke
 		return t.queryAllGoods(stub, args)
 	} else if function == "queryAllAddedGoods" {
-		// the old "Query" is now implemtned in invoke
 		return t.queryAllAddedGoods(stub, args)
 	} else if function == "queryLogisticByGoodsId" {
-		// the old "Query" is now implemtned in invoke
 		return t.queryLogisticByGoodsId(stub, args)
 	} else if function == "addGoods" {
 		return  t.addGoods(stub, args)
@@ -230,17 +233,14 @@ func (t *TraceChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	} else if function == "modifyLogistic" {
 		return t.modifyLogistic(stub, args)
 	} else if function == "deleteUser" {
-		// Deletes an entity from its state
 		return t.deleteUser(stub, args)
 	} else if function == "deleteGoods" {
-		// Deletes an entity from its state
 		return t.deleteGoods(stub, args)
 	} else if function == "deleteLogistic" {
-		// Deletes an entity from its state
 		return t.deleteLogistic(stub, args)
 	}
 
-	return shim.Error("Invalid invoke function name."+ function + "Expecting \"invoke\" \"delete\" \"query\" \"queryAllGoods\" \"queryLogisticByGoodsId\" \"addGoods\" \"modifyGoods\" \"addLogistic\" \"modifyLogistic\" \"deleteGoods\" \"deleteLogistic\" ")
+	return shim.Error("Invalid invoke function name."+ function + "Expecting \"invoke\" \"login\" \"register\" \"addManagerForExist\" \"addManagerForNotExist\" \"addManager\" \"setManagerLevel\" \"setAddLevel\" \"setModifyLevel\" \"setQueryLevel\" \"setDeleteLevel\" \"query\" \"queryAllUser\" \"queryGoodsById\" \"queryAllGoods\" \"queryAllAddedGoods\" \"queryLogisticByGoodsId\" \"addGoods\" \"modifyGoods\" \"addLogistic\" \"modifyLogistic\" \"deleteUser\" \"deleteGoods\" \"deleteLogistic\" ")
 }
 
 /* 用户登录 */
@@ -392,7 +392,9 @@ func (t *TraceChaincode)addManagerForExist(stub shim.ChaincodeStubInterface, arg
 			if err != nil {
 				return shim.Error("Failed to get state")
 			}
-			lev,_ := strconv.Atoi(string(managerLevelbytes))
+			managerLevel := QX{}
+			err  = json.Unmarshal(managerLevelbytes, &managerLevel)
+			lev := managerLevel.Level
 
 			user := User{}
 			err  = json.Unmarshal(userbytes, &user)
@@ -474,7 +476,9 @@ func (t *TraceChaincode)addManagerForNotExist(stub shim.ChaincodeStubInterface, 
 			if err != nil {
 				return shim.Error("Failed to get state")
 			}
-			lev,_ := strconv.Atoi(string(managerLevelbytes))
+			managerLevel := QX{}
+			err  = json.Unmarshal(managerLevelbytes, &managerLevel)
+			lev := managerLevel.Level
 
 			usersbytes, err := stub.GetState(userListKey)
 			if err != nil {
@@ -569,7 +573,9 @@ func (t *TraceChaincode)addManager(stub shim.ChaincodeStubInterface, args []stri
 		if err != nil {
 			return shim.Error("Failed to get state")
 		}
-		lev,_ := strconv.Atoi(string(managerLevelbytes))
+		managerLevel := QX{}
+		err  = json.Unmarshal(managerLevelbytes, &managerLevel)
+		lev := managerLevel.Level
 		if manager.Level >= lev {
 			var newlevel int
 			newlevel, err = strconv.Atoi(level)
@@ -580,16 +586,23 @@ func (t *TraceChaincode)addManager(stub shim.ChaincodeStubInterface, args []stri
 			} else {
 				user := User{}
 				err  = json.Unmarshal(userbytes, &user)
-				user.Level = newlevel
-				user.ModifyDate = modifyDate
-				newuserbytes,_ := json.Marshal(user)
-				err = stub.PutState(name, newuserbytes)
-				if err != nil {
-					return shim.Error(err.Error())
+
+				if newlevel >= manager.Level {
+					status = false
+					message = "您没有权限设置该用户的权限"
+					data = ""
+				} else {
+					user.Level = newlevel
+					user.ModifyDate = modifyDate
+					newuserbytes,_ := json.Marshal(user)
+					err = stub.PutState(name, newuserbytes)
+					if err != nil {
+						return shim.Error(err.Error())
+					}
+					status = true
+					message = "成功设置 " + name + " 的权限为" + level
+					data = string(newuserbytes)
 				}
-				status = true
-				message = "成功设置 " + name + " 的权限为" + level
-				data = string(newuserbytes)
 			}
 		} else {
 			status = true
@@ -639,14 +652,16 @@ func (t *TraceChaincode)setManagerLevel(stub shim.ChaincodeStubInterface, args [
 
 	if managerPwd == manager.Password {
 		if manager.Level == 666 {
-			levelbytes,_ := json.Marshal(level)
+			lev,_ := strconv.Atoi(level)
+			managerLevel := QX{Level: lev}
+			levelbytes,_ := json.Marshal(managerLevel)
 			err = stub.PutState(managerLevelKey, levelbytes)
 			if err != nil {
 				return shim.Error(err.Error())
 			}
 			status = true
 			message = "成功设置管理员权限等级为:" + level
-			data = string(levelbytes)
+			data = level
 		} else {
 			status = false
 			message = "权限不足"
@@ -698,7 +713,10 @@ func (t *TraceChaincode)setAddLevel(stub shim.ChaincodeStubInterface, args []str
 		if err != nil {
 			return shim.Error("Failed to get state")
 		}
-		lev,_ := strconv.Atoi(string(managerLevelbytes))
+
+		managerLevel := QX{}
+		err  = json.Unmarshal(managerLevelbytes, &managerLevel)
+		lev := managerLevel.Level
 		if manager.Level >= lev {
 			var newlevel int
 			newlevel, err = strconv.Atoi(level)
@@ -707,14 +725,15 @@ func (t *TraceChaincode)setAddLevel(stub shim.ChaincodeStubInterface, args []str
 				message = "设置的权限等级不能超过管理员权限等级"
 				data = ""
 			} else {
-				addLevelBytes,_ := json.Marshal(level)
+				addLevel := QX{Level: newlevel}
+				addLevelBytes,_ := json.Marshal(addLevel)
 				err = stub.PutState(addLevelKey, addLevelBytes)
 				if err != nil {
 					return shim.Error(err.Error())
 				}
 				status = true
 				message = "成功设置添加权限为:" + level
-				data = string(addLevelBytes)
+				data = level
 			}
 		} else {
 			status = true
@@ -767,7 +786,9 @@ func (t *TraceChaincode)setModifyLevel(stub shim.ChaincodeStubInterface, args []
 		if err != nil {
 			return shim.Error("Failed to get state")
 		}
-		lev,_ := strconv.Atoi(string(managerLevelbytes))
+		managerLevel := QX{}
+		err  = json.Unmarshal(managerLevelbytes, &managerLevel)
+		lev := managerLevel.Level
 		if manager.Level >= lev {
 			var newlevel int
 			newlevel, err = strconv.Atoi(level)
@@ -776,7 +797,8 @@ func (t *TraceChaincode)setModifyLevel(stub shim.ChaincodeStubInterface, args []
 				message = "设置的权限等级不能超过管理员权限等级"
 				data = ""
 			} else {
-				modifyLevelBytes,_ := json.Marshal(level)
+				modifyLevel := QX{Level: newlevel}
+				modifyLevelBytes,_ := json.Marshal(modifyLevel)
 				err = stub.PutState(modifyLevelKey, modifyLevelBytes)
 				if err != nil {
 					return shim.Error(err.Error())
@@ -836,16 +858,19 @@ func (t *TraceChaincode)setQueryLevel(stub shim.ChaincodeStubInterface, args []s
 		if err != nil {
 			return shim.Error("Failed to get state")
 		}
-		lev,_ := strconv.Atoi(string(managerLevelbytes))
+		managerLevel := QX{}
+		err  = json.Unmarshal(managerLevelbytes, &managerLevel)
+		lev := managerLevel.Level
 		if manager.Level >= lev {
 			var newlevel int
 			newlevel, err = strconv.Atoi(level)
 			if newlevel > lev {
 				status = false
-				message = "设置的权限等级不能超过管理员权限等级"
+				message = "设置的查看权限等级不能超过管理员权限等级"
 				data = ""
 			} else {
-				queryLevelBytes,_ := json.Marshal(level)
+				queryLevel := QX{Level: newlevel}
+				queryLevelBytes,_ := json.Marshal(queryLevel)
 				err = stub.PutState(queryLevelKey, queryLevelBytes)
 				if err != nil {
 					return shim.Error(err.Error())
@@ -905,7 +930,9 @@ func (t *TraceChaincode)setDeleteLevel(stub shim.ChaincodeStubInterface, args []
 		if err != nil {
 			return shim.Error("Failed to get state")
 		}
-		lev,_ := strconv.Atoi(string(managerLevelbytes))
+		managerLevel := QX{}
+		err  = json.Unmarshal(managerLevelbytes, &managerLevel)
+		lev := managerLevel.Level
 		if manager.Level >= lev {
 			var newlevel int
 			newlevel, err = strconv.Atoi(level)
@@ -914,7 +941,8 @@ func (t *TraceChaincode)setDeleteLevel(stub shim.ChaincodeStubInterface, args []
 				message = "设置的权限等级不能超过管理员权限等级"
 				data = ""
 			} else {
-				deleteLevelBytes,_ := json.Marshal(level)
+				deleteLevel := QX{Level: newlevel}
+				deleteLevelBytes,_ := json.Marshal(deleteLevel)
 				err = stub.PutState(deleteLevelKey, deleteLevelBytes)
 				if err != nil {
 					return shim.Error(err.Error())
@@ -965,7 +993,9 @@ func (t *TraceChaincode)addGoods(stub shim.ChaincodeStubInterface, args []string
 	if err != nil {
 		return shim.Error("Failed to get state")
 	}
-	lev,_ := strconv.Atoi(string(addLevelbytes))
+	addLevel := QX{}
+	err  = json.Unmarshal(addLevelbytes, &addLevel)
+	lev := addLevel.Level
 	userbytes, err := stub.GetState(username)
 	if err != nil {
 		return shim.Error("Failed to get state")
@@ -1040,7 +1070,7 @@ func (t *TraceChaincode)addGoods(stub shim.ChaincodeStubInterface, args []string
 	data = string(goodsbytes)
 
 	if notExist {
-		goodsIds := make(map[string]string)
+		var goodsIds []string
 		goodsIdsBytes, err := stub.GetState(goodsListKey)
 		if err != nil {
 			jsonResp := "{\"Error\":\"Failed to get state for " + goodsListKey + "\"}"
@@ -1051,7 +1081,7 @@ func (t *TraceChaincode)addGoods(stub shim.ChaincodeStubInterface, args []string
 			err = json.Unmarshal(goodsIdsBytes, &goodsIds)
 		}
 
-		goodsIds[id] = id
+		goodsIds = append(goodsIds, id)
 
 		newgoodsIdsBytes,_ := json.Marshal(goodsIds)
 		err = stub.PutState(goodsListKey, newgoodsIdsBytes)
@@ -1085,7 +1115,9 @@ func (t *TraceChaincode)modifyGoods(stub shim.ChaincodeStubInterface, args []str
 	if err != nil {
 		return shim.Error("Failed to get state")
 	}
-	lev,_ := strconv.Atoi(string(modifyLevelbytes))
+	modifyLevel := QX{}
+	err  = json.Unmarshal(modifyLevelbytes, &modifyLevel)
+	lev := modifyLevel.Level
 	userbytes, err := stub.GetState(username)
 	if err != nil {
 		return shim.Error("Failed to get state")
@@ -1147,7 +1179,7 @@ func (t *TraceChaincode)modifyGoods(stub shim.ChaincodeStubInterface, args []str
 /* 添加物流信息 */
 func (t *TraceChaincode)addLogistic(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	//var logistic Logistic    // Entities
-	var id, goodsId, cityName, username, createDate string
+	var id, goodsId, cityName, createDate, username string
 	var err error
 
 	if len(args) != 5 {
@@ -1158,8 +1190,8 @@ func (t *TraceChaincode)addLogistic(stub shim.ChaincodeStubInterface, args []str
 	id = args[0]
 	goodsId = args[1]
 	cityName = args[2]
-	username = args[3]
-	createDate = args[4]
+	createDate = args[3]
+	username = args[4]
 
 	var message, data string
 	var status bool
@@ -1168,7 +1200,9 @@ func (t *TraceChaincode)addLogistic(stub shim.ChaincodeStubInterface, args []str
 	if err != nil {
 		return shim.Error("Failed to get state")
 	}
-	lev,_ := strconv.Atoi(string(addLevelbytes))
+	addLevel := QX{}
+	err  = json.Unmarshal(addLevelbytes, &addLevel)
+	lev := addLevel.Level
 	userbytes, err := stub.GetState(username)
 	if err != nil {
 		return shim.Error("Failed to get state")
@@ -1256,7 +1290,9 @@ func (t *TraceChaincode)modifyLogistic(stub shim.ChaincodeStubInterface, args []
 	if err != nil {
 		return shim.Error("Failed to get state")
 	}
-	lev,_ := strconv.Atoi(string(modifyLevelbytes))
+	modifyLevel := QX{}
+	err  = json.Unmarshal(modifyLevelbytes, &modifyLevel)
+	lev := modifyLevel.Level
 	userbytes, err := stub.GetState(username)
 	if err != nil {
 		return shim.Error("Failed to get state")
@@ -1329,10 +1365,72 @@ func (t *TraceChaincode) invoke(stub shim.ChaincodeStubInterface, args []string)
 	return shim.Success(nil)
 }
 
-/* 查看 */
+/* 查看(带权限) */
+func (t *TraceChaincode) queryWithLevel(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	var key, username, message, data string
+	var status bool
+
+	if len(args) != 2 {
+		return shim.Error("Incorrect number of arguments. Expecting key and username")
+	}
+
+	key = args[0]
+	username = args[1]
+
+	managerLevelbytes, err := stub.GetState(managerLevelKey)
+	if err != nil {
+		return shim.Error("Failed to get state")
+	}
+	managerLevel := QX{}
+	err  = json.Unmarshal(managerLevelbytes, &managerLevel)
+	lev := managerLevel.Level
+	userbytes, err := stub.GetState(username)
+	if err != nil {
+		return shim.Error("Failed to get state")
+	}
+	if userbytes == nil {
+		status = false
+		message = "该用户不存在"
+		data = ""
+		result := Result{status, message, data}
+		resultbytes,_ := json.Marshal(result)
+		return shim.Success(resultbytes)
+	}
+
+	user := User{}
+	err  = json.Unmarshal(userbytes, &user)
+
+	if user.Level < lev {
+		status = false
+		message = "查看权限不足"
+		data = ""
+		result := Result{status, message, data}
+		resultbytes,_ := json.Marshal(result)
+		return shim.Success(resultbytes)
+	}
+
+	keybytes, err := stub.GetState(key)
+	if err != nil {
+		shim.Error(err.Error())
+	}
+
+	status = true
+	message = "查询成功"
+	data = string(keybytes)
+
+	result := Result{status, message, data}
+	resultbytes,_ := json.Marshal(result)
+	return shim.Success(resultbytes)
+}
+
+/* 查看（不带权限）*/
 func (t *TraceChaincode) query(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	var key, message, data string
 	var status bool
+
+	if len(args) != 1 {
+		return shim.Error("Incorrect number of arguments. Expecting key")
+	}
 
 	key = args[0]
 
@@ -1352,22 +1450,27 @@ func (t *TraceChaincode) query(stub shim.ChaincodeStubInterface, args []string) 
 
 /* 查看所有用户信息 */
 func (t *TraceChaincode) queryAllUser(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	var username string
+	var username, pageNum, pageSize string
 
-	if len(args) != 1 {
-		return shim.Error("Incorrect number of arguments. Expecting name of the person to query")
+	if len(args) != 3 {
+		return shim.Error("Incorrect number of arguments. Expecting username, pageNum, pageSize")
 	}
 
 	username = args[0]
+	pageNum = args[1]
+	pageSize = args[2]
 
 	var message, data string
+	var num, size, total int
 	var status bool
 
 	managerLevelbytes, err := stub.GetState(managerLevelKey)
 	if err != nil {
 		return shim.Error("Failed to get state")
 	}
-	lev,_ := strconv.Atoi(string(managerLevelbytes))
+	managerLevel := QX{}
+	err  = json.Unmarshal(managerLevelbytes, &managerLevel)
+	lev := managerLevel.Level
 	userbytes, err := stub.GetState(username)
 	if err != nil {
 		return shim.Error("Failed to get state")
@@ -1400,8 +1503,25 @@ func (t *TraceChaincode) queryAllUser(stub shim.ChaincodeStubInterface, args []s
 	var users []string
 	err = json.Unmarshal(usersbytes, &users)
 
+	num,_ = strconv.Atoi(pageNum)
+	size,_ = strconv.Atoi(pageSize)
+	total = len(users)
+	start := (num - 1) * size
+	end := num * size - 1
+	if end >= total {
+		end = total - 1
+	}
+
+	var pageUsers []string
+
+	if total > start {
+		for i:=start;i<=end;i++ {
+			pageUsers = append(pageUsers,users[i])
+		}
+	}
+
 	userMap := []User{}
-	for _, _name := range users {
+	for _, _name := range pageUsers {
 
 		userbytes, err := stub.GetState(_name)
 		if err != nil {
@@ -1430,29 +1550,34 @@ func (t *TraceChaincode) queryAllUser(stub shim.ChaincodeStubInterface, args []s
 	status = true
 	message = "查询成功"
 	data = string(usersJson)
-	result := Result{status, message, data}
+	result := PageResult{Status: status, Message: message, Data: data, PageNum: num, PageSize: size, Total: total}
 	resultbytes,_ := json.Marshal(result)
 	return shim.Success(resultbytes)
 }
 
 /* 查看所有商品信息 */
 func (t *TraceChaincode) queryAllGoods(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	var username string
+	var username, pageNum, pageSize string
 
-	if len(args) != 1 {
-		return shim.Error("Incorrect number of arguments. Expecting name of the person to query")
+	if len(args) != 3 {
+		return shim.Error("Incorrect number of arguments. Expecting username, pageNum, pageSize")
 	}
 
 	username = args[0]
+	pageNum = args[1]
+	pageSize = args[2]
 
 	var message, data string
+	var total, num, size int
 	var status bool
 
 	queryLevelbytes, err := stub.GetState(queryLevelKey)
 	if err != nil {
 		return shim.Error("Failed to get state")
 	}
-	lev,_ := strconv.Atoi(string(queryLevelbytes))
+	queryLevel := QX{}
+	err  = json.Unmarshal(queryLevelbytes, &queryLevel)
+	lev := queryLevel.Level
 	userbytes, err := stub.GetState(username)
 	if err != nil {
 		return shim.Error("Failed to get state")
@@ -1483,24 +1608,38 @@ func (t *TraceChaincode) queryAllGoods(stub shim.ChaincodeStubInterface, args []
 		shim.Error(err.Error())
 	}
 	
-	goodsIds := make(map[string]string)
+	var goodsIds []string
 
 	err = json.Unmarshal(goodsIdsBytes, &goodsIds)
 
-	goodsMap := []Goods{}
-	for id, _id := range goodsIds {
+	num,_ = strconv.Atoi(pageNum)
+	size,_ = strconv.Atoi(pageSize)
+	total = len(goodsIds)
+	start := (num - 1) * size
+	end := num * size - 1
+	if end >= total {
+		end = total - 1
+	}
 
-		goodsIdbytes, err := stub.GetState(_id)
+	var pageGoodsIds []string
+
+	if total > start {
+		for i:=start;i<=end;i++ {
+			pageGoodsIds = append(pageGoodsIds,goodsIds[i])
+		}
+	}
+
+	goodsMap := []Goods{}
+	for _,id := range pageGoodsIds {
+		goodsIdbytes, err := stub.GetState(id)
 		if err != nil {
-			jsonResp := "{\"Error\":\"Failed to get state for " + id + _id + "\"}"
+			jsonResp := "{\"Error\":\"Failed to get state for " + id + "\"}"
 			return shim.Error(jsonResp)
 		}
 
 		if goodsIdbytes == nil {
-			jsonResp := "{\"Error\":\"Nil amount for " + id + _id + "\"}"
-			return shim.Error(jsonResp)
+			continue
 		}
-
 		goods := Goods{}
 	   	err  = json.Unmarshal(goodsIdbytes, &goods)
 		if err != nil {
@@ -1517,6 +1656,89 @@ func (t *TraceChaincode) queryAllGoods(stub shim.ChaincodeStubInterface, args []
 	status = true
 	message = "查询成功"
 	data = string(goodsJson)
+	result := PageResult{Status: status, Message: message, Data: data, PageNum: num, PageSize: size, Total: total}
+	resultbytes,_ := json.Marshal(result)
+	return shim.Success(resultbytes)
+}
+
+/* 根据商品id查看商品信息 */
+func (t *TraceChaincode) queryGoodsById(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	var id,username string
+
+	if len(args) != 2 {
+		return shim.Error("Incorrect number of arguments. Expecting goodsId and username")
+	}
+
+	id = args[0]
+	username = args[1]
+
+	var message, data string
+	var status bool
+
+	queryLevelbytes, err := stub.GetState(queryLevelKey)
+	if err != nil {
+		status = false
+		message = "查询 查询权限等级失败"
+		data = ""
+		result := Result{status, message, data}
+		resultbytes,_ := json.Marshal(result)
+		return shim.Success(resultbytes)
+	}
+	queryLevel := QX{}
+	err  = json.Unmarshal(queryLevelbytes, &queryLevel)
+	lev := queryLevel.Level
+	userbytes, err := stub.GetState(username)
+	if err != nil {
+		status = false
+		message = "查询失败"
+		data = ""
+		result := Result{status, message, data}
+		resultbytes,_ := json.Marshal(result)
+		return shim.Success(resultbytes)
+	}
+	if userbytes == nil {
+		status = false
+		message = "该用户不存在"
+		data = ""
+		result := Result{status, message, data}
+		resultbytes,_ := json.Marshal(result)
+		return shim.Success(resultbytes)
+	}
+
+	user := User{}
+	err  = json.Unmarshal(userbytes, &user)
+
+	if user.Level < lev {
+		status = false
+		message = "查看权限不足"
+		data = ""
+		result := Result{status, message, data}
+		resultbytes,_ := json.Marshal(result)
+		return shim.Success(resultbytes)
+	}
+
+	goodsbytes, err := stub.GetState(id)
+	if err != nil {
+		status = false
+		message = "查询失败"
+		data = ""
+		result := Result{status, message, data}
+		resultbytes,_ := json.Marshal(result)
+		return shim.Success(resultbytes)
+	}
+
+	if goodsbytes == nil {
+		status = false
+		message = "未查询到该商品"
+		data = ""
+		result := Result{status, message, data}
+		resultbytes,_ := json.Marshal(result)
+		return shim.Success(resultbytes)
+	}
+
+	status = true
+	message = "查询成功"
+	data = string(goodsbytes)
 	result := Result{status, message, data}
 	resultbytes,_ := json.Marshal(result)
 	return shim.Success(resultbytes)
@@ -1527,7 +1749,7 @@ func (t *TraceChaincode) queryAllAddedGoods(stub shim.ChaincodeStubInterface, ar
 	var username string
 
 	if len(args) != 1 {
-		return shim.Error("Incorrect number of arguments. Expecting name of the person to query")
+		return shim.Error("Incorrect number of arguments. Expecting username")
 	}
 
 	username = args[0]
@@ -1537,12 +1759,24 @@ func (t *TraceChaincode) queryAllAddedGoods(stub shim.ChaincodeStubInterface, ar
 
 	queryLevelbytes, err := stub.GetState(queryLevelKey)
 	if err != nil {
-		return shim.Error("Failed to get state")
+		status = false
+		message = "查询 查询权限等级失败"
+		data = ""
+		result := Result{status, message, data}
+		resultbytes,_ := json.Marshal(result)
+		return shim.Success(resultbytes)
 	}
-	lev,_ := strconv.Atoi(string(queryLevelbytes))
+	queryLevel := QX{}
+	err  = json.Unmarshal(queryLevelbytes, &queryLevel)
+	lev := queryLevel.Level
 	userbytes, err := stub.GetState(username)
 	if err != nil {
-		return shim.Error("Failed to get state")
+		status = false
+		message = "查询失败"
+		data = ""
+		result := Result{status, message, data}
+		resultbytes,_ := json.Marshal(result)
+		return shim.Success(resultbytes)
 	}
 	if userbytes == nil {
 		status = false
@@ -1614,7 +1848,7 @@ func (t *TraceChaincode) queryLogisticByGoodsId(stub shim.ChaincodeStubInterface
 	var id,username string
 
 	if len(args) != 2 {
-		return shim.Error("Incorrect number of arguments. Expecting name of the person to query")
+		return shim.Error("Incorrect number of arguments. Expecting id and username")
 	}
 
 	id = args[0]
@@ -1627,7 +1861,9 @@ func (t *TraceChaincode) queryLogisticByGoodsId(stub shim.ChaincodeStubInterface
 	if err != nil {
 		return shim.Error("Failed to get state")
 	}
-	lev,_ := strconv.Atoi(string(queryLevelbytes))
+	queryLevel := QX{}
+	err  = json.Unmarshal(queryLevelbytes, &queryLevel)
+	lev := queryLevel.Level
 	userbytes, err := stub.GetState(username)
 	if err != nil {
 		return shim.Error("Failed to get state")
@@ -1689,7 +1925,7 @@ func (t *TraceChaincode) deleteUser(stub shim.ChaincodeStubInterface, args []str
 	var err error
 
 	if len(args) != 2 {
-		return shim.Error("Incorrect number of arguments. Expecting 2")
+		return shim.Error("Incorrect number of arguments. Expecting username and managerName")
 	}
 
 	username = args[0]
@@ -1750,11 +1986,16 @@ func (t *TraceChaincode) deleteUser(stub shim.ChaincodeStubInterface, args []str
 	var users []string
 	err = json.Unmarshal(usersbytes, &users)
 
-	for index, _name : range users {
-		if username == _name {
-			users = append(users[:index], users[index+1:]...)
+	for index,name := range users {
+		if username == name {
+			users = append(users[:index],users[index+1:]...)
 		}
-		break
+	}
+
+	newusersbytes,_ := json.Marshal(users)
+	err = stub.PutState(userListKey, newusersbytes)
+	if err != nil {
+		return shim.Error(err.Error())
 	}
 
 	status = true
@@ -1770,8 +2011,8 @@ func (t *TraceChaincode) deleteGoods(stub shim.ChaincodeStubInterface, args []st
 	var id, username string
 	var err error
 
-	if len(args) != 1 {
-		return shim.Error("Incorrect number of arguments. Expecting name of the person to query")
+	if len(args) != 2 {
+		return shim.Error("Incorrect number of arguments. Expecting id and username")
 	}
 
 	id = args[0]
@@ -1784,7 +2025,9 @@ func (t *TraceChaincode) deleteGoods(stub shim.ChaincodeStubInterface, args []st
 	if err != nil {
 		return shim.Error("Failed to get state")
 	}
-	lev,_ := strconv.Atoi(string(deleteLevelbytes))
+	deleteLevel := QX{}
+	err  = json.Unmarshal(deleteLevelbytes, &deleteLevel)
+	lev := deleteLevel.Level
 	userbytes, err := stub.GetState(username)
 	if err != nil {
 		return shim.Error("Failed to get state")
@@ -1827,7 +2070,7 @@ func (t *TraceChaincode) deleteGoods(stub shim.ChaincodeStubInterface, args []st
 	if err != nil {
 		return shim.Error("Failed to delete state")
 	} else {
-		goodsIds := make(map[string]string)
+		var goodsIds []string
 		goodsIdsBytes, err := stub.GetState(goodsListKey)
 		if err != nil {
 			jsonResp := "{\"Error\":\"Failed to get state for " + goodsListKey + "\"}"
@@ -1838,7 +2081,11 @@ func (t *TraceChaincode) deleteGoods(stub shim.ChaincodeStubInterface, args []st
 			err = json.Unmarshal(goodsIdsBytes, &goodsIds)
 		}
 
-		delete(goodsIds, id)
+		for index,_id := range goodsIds {
+			if id == _id {
+				goodsIds = append(goodsIds[:index],goodsIds[index+1:]...)
+			}
+		}
 
 		newgoodsIdsBytes,_ := json.Marshal(goodsIds)
 		err = stub.PutState(goodsListKey, newgoodsIdsBytes)
@@ -1862,7 +2109,7 @@ func (t *TraceChaincode) deleteLogistic(stub shim.ChaincodeStubInterface, args [
 	var err error
 
 	if len(args) != 3 {
-		return shim.Error("Incorrect number of arguments. Expecting 1")
+		return shim.Error("Incorrect number of arguments. Expecting id, goodsId and username")
 	}
 
 	id = args[0]
@@ -1876,7 +2123,9 @@ func (t *TraceChaincode) deleteLogistic(stub shim.ChaincodeStubInterface, args [
 	if err != nil {
 		return shim.Error("Failed to get state")
 	}
-	lev,_ := strconv.Atoi(string(deleteLevelbytes))
+	deleteLevel := QX{}
+	err  = json.Unmarshal(deleteLevelbytes, &deleteLevel)
+	lev := deleteLevel.Level
 	userbytes, err := stub.GetState(username)
 	if err != nil {
 		return shim.Error("Failed to get state")

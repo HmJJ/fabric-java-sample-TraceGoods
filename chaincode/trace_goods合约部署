@@ -1,5 +1,6 @@
 docker stop $(docker ps -aq)
 docker rm $(docker ps -aq)
+docker rmi --force $(docker images | grep peer0.org1 | awk '{print $3}')
 
 docker-compose -f docker-orderer.yaml up -d
 docker-compose -f docker-peer.yaml up -d
@@ -19,7 +20,7 @@ peer chaincode install -n tracegoods -p github.com/hyperledger/fabric/aberic/cha
 peer chaincode instantiate -o orderer.example.com:7050 -C mychannel -n tracegoods -c '{"Args":["init","admin","admin"]}' -P "OR ('Org1MSP.member')" -v 1.0
 
 升级智能合约
-peer chaincode upgrade -o orderer.example.com:7050 -C mychannel -n tracegoods -c '{"Args":["init"]}' -P "OR ('Org1MSP.member')" -v 1.0
+peer chaincode upgrade -o orderer.example.com:7050 -C mychannel -n tracegoods -c '{"Args":["init","admin","admin"]}' -P "OR ('Org1MSP.member')" -v 1.0
 
 通用查询
 peer chaincode query -C mychannel -n tracegoods -c '{"Args":["query","94cdaa8576314e6bb4277c11bc3f0492"]}'
@@ -34,10 +35,13 @@ peer chaincode invoke -C mychannel -n tracegoods -c '{"Args":["addGoods","75aadc
 peer chaincode invoke -C mychannel -n tracegoods -c '{"Args":["modifyGoods","94cdaa8576314e6bb4277c11bc3f0492","PS5","5000","2018/12/13"]}'
 
 根据id查询商品
-peer chaincode query -C mychannel -n tracegoods -c '{"Args":["queryLogisticByGoodsId","478e65416314421f9ead0c15b04c9ea3"]}'
+peer chaincode query -C mychannel -n tracegoods -c '{"Args":["queryGoodsById","430580012012402daaa9d1e26cd0791d","admin"]}'
+
+根据id查询商品物流
+peer chaincode query -C mychannel -n tracegoods -c '{"Args":["queryLogisticByGoodsId","a249cd04a2a04d2ea561cf8d4dc4c456"]}'
 
 查询所有商品
-peer chaincode query -C mychannel -n tracegoods -c '{"Args":["queryAllGoods"]}'
+peer chaincode query -C mychannel -n tracegoods -c '{"Args":["queryAllGoods","admin","1","5"]}'
 
 添加物流信息
 peer chaincode invoke -C mychannel -n tracegoods -c '{"Args":["addLogistic","94cdaa8576314e6bb4277c11bc3f0111","94cdaa8576314e6bb4277c11bc3f0492","美国"]}'
