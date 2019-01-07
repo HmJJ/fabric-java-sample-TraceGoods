@@ -1,6 +1,6 @@
 docker stop $(docker ps -aq)
 docker rm $(docker ps -aq)
-docker rmi --force $(docker images | grep peer0.org1 | awk '{print $3}')
+docker rmi --force $(docker images | grep example.com | awk '{print $3}')
 
 docker-compose -f docker-orderer.yaml up -d
 docker-compose -f docker-peer.yaml up -d
