@@ -14,13 +14,13 @@ peer channel create -o orderer.example.com:7050 -c mychannel  -f ./channel-artif
 peer channel join -b mychannel.block
 
 安装智能合约
-peer chaincode install -n tracegoods -p github.com/hyperledger/fabric/aberic/chaincode/go/trace_goods -v 1.0
+peer chaincode install -n tracegoods -p github.com/hyperledger/fabric/aberic/chaincode/go/trace_goods -v 1.1
 
 初始化
 peer chaincode instantiate -o orderer.example.com:7050 -C mychannel -n tracegoods -c '{"Args":["init","admin","admin"]}' -P "OR ('Org1MSP.member')" -v 1.0
 
 升级智能合约
-peer chaincode upgrade -o orderer.example.com:7050 -C mychannel -n tracegoods -c '{"Args":["init","admin","admin"]}' -P "OR ('Org1MSP.member')" -v 1.0
+peer chaincode upgrade -o orderer.example.com:7050 -C mychannel -n tracegoods -c '{"Args":["init","admin","admin"]}' -P "OR ('Org1MSP.member')" -v 1.1
 
 通用查询
 peer chaincode query -C mychannel -n tracegoods -c '{"Args":["query","94cdaa8576314e6bb4277c11bc3f0492"]}'
