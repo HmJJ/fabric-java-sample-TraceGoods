@@ -17,8 +17,8 @@ public class BaseManager {
      * @return /WEB-INF/classes/fabric/channel-artifacts/
      */
     protected String getChannleArtifactsPath(String module) {
-//        String directorys = BaseManager.class.getClassLoader().getResource("fabric").getFile();
-    	String directorys = "/opt/gopath/src/github.com/hyperledger/fabric";
+        String directorys = BaseManager.class.getClassLoader().getResource("fabric").getFile();
+//    	String directorys = "/opt/gopath/src/github.com/hyperledger/fabric";
     	logger.debug("directorys = " + directorys);
         File directory = new File(directorys);
         logger.debug("directory = " + directory.getPath());
@@ -32,8 +32,8 @@ public class BaseManager {
      * @return /WEB-INF/classes/fabric/crypto-config/
      */
     protected String getCryptoConfigPath(String module) {
-//        String directorys = BaseManager.class.getClassLoader().getResource("fabric").getFile();
-    	String directorys = "/opt/gopath/src/github.com/hyperledger/fabric";
+        String directorys = BaseManager.class.getClassLoader().getResource("fabric").getFile();
+//    	String directorys = "/opt/gopath/src/github.com/hyperledger/fabric";
     	logger.debug("directorys = " + directorys);
         System.out.println("directorysdirectorys:" + BaseManager.class.getClassLoader());
         File directory = new File(directorys);

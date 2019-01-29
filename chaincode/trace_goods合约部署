@@ -26,8 +26,11 @@ peer chaincode upgrade -o orderer.example.com:7050 -C mychannel -n tracegoods -c
 peer chaincode query -C mychannel -n tracegoods -c '{"Args":["query","94cdaa8576314e6bb4277c11bc3f0492"]}'
 peer chaincode query -C mychannel -n tracegoods -c '{"Args":["query","sheep_goods_list"]}'
 
+查询其他通道的智能合约的数据
+peer chaincode query -C mychannel -n tracegoods -c '{"Args":["queryOtherChannel", "chaincodeName", "channelName","key"]}'
+
 添加商品
-peer chaincode invoke -C mychannel -n tracegoods -c '{"Args":["addGoods","94cdaa8576314e6bb4277c11bc3f0492","PS4","2000","2018/12/12"]}'
+peer chaincode invoke -C mychannel -n tracegoods -c '{"Args":["addGoods","94cdaa8576314e6bb4277c11bc3f0492","PS4","2000","2018/12/12","admin"]}'
 
 peer chaincode invoke -C mychannel -n tracegoods -c '{"Args":["addGoods","75aadc3675841bb6e7724b11c0f3c294","iphoneX","10000","2018/12/13"]}'
 
