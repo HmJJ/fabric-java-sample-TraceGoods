@@ -212,6 +212,8 @@ func (t *TraceChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 		return t.setDeleteLevel(stub, args)
 	} else if function == "query" {
 		return t.query(stub, args)
+	} else if function == "queryOtherChannel" {
+		return t.queryOtherChannel(stub, args)
 	} else if function == "queryWithLevel" {
 		return t.queryWithLevel(stub, args)
 	} else if function == "queryAllUser" {
@@ -1442,6 +1444,43 @@ func (t *TraceChaincode) query(stub shim.ChaincodeStubInterface, args []string) 
 	status = true
 	message = "查询成功"
 	data = string(keybytes)
+
+	result := Result{status, message, data}
+	resultbytes,_ := json.Marshal(result)
+	return shim.Success(resultbytes)
+}
+
+/* 查看其他通道的智能合约（不带权限）*/
+func (t *TraceChaincode) queryOtherChannel(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	var chaincodeName, channelName, key, message, data string
+	var status bool
+
+	if len(args) != 3 {
+		return shim.Error("Incorrect number of arguments. Expecting chaincodeName, channelName and key")
+	}
+
+	chaincodeName = args[0]
+	channelName = args[1]
+	key = args[2]
+
+	parmas := []string{"query", key}
+	queryArgs := make([][]byte, len(parmas))
+	for i, arg := range parmas {
+		queryArgs[i] = []byte(arg)
+	}
+
+	response := stub.InvokeChaincode(chaincodeName, queryArgs, channelName)
+
+	if response.Status != shim.OK {
+		errStr := fmt.Sprintf("Failed to query chaincode. Got error: %s", response.Payload)
+		status = false
+		message = "查询失败"
+		data = errStr
+	} else {
+		status = true
+		message = "查询成功"
+		data = string(response.Payload)
+	}
 
 	result := Result{status, message, data}
 	resultbytes,_ := json.Marshal(result)
