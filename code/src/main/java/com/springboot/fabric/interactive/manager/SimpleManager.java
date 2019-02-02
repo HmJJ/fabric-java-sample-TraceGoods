@@ -40,7 +40,7 @@ public class SimpleManager extends BaseManager {
         .setUser("Admin", getCryptoConfigPath("aberic"), getChannleArtifactsPath("aberic"))
         .setCA("ca", "http://47.244.142.213:7054")
         .setPeers("Org1MSP", "org1.example.com")
-        .addPeer("peer0.org1.example.com", "peer0.org1.example.com", "grpc://47.244.142.213:7051", "grpc://47.244.142.213:7053", true)
+        .addPeer("peer1.org1.example.com", "peer1.org1.example.com", "grpc://39.108.64.144:7051", "grpc://39.108.64.144:7053", true)
         .setOrderers("example.com")
         .addOrderer("orderer.example.com", "grpc://47.244.142.213:7050")
         .setChannel("mychannel")

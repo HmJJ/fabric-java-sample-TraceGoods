@@ -160,7 +160,7 @@ class IntermediateChaincodeID {
         transactionProposalRequest.setChaincodeID(chaincodeID);
         transactionProposalRequest.setFcn(fcn);
         transactionProposalRequest.setArgs(args);
-        transactionProposalRequest.setProposalWaitTime(proposalWaitTime);
+//        transactionProposalRequest.setProposalWaitTime(proposalWaitTime);
 
         Map<String, byte[]> tm2 = new HashMap<>();
         tm2.put("HyperLedgerFabric", "TransactionProposalRequest:JavaSDK".getBytes(UTF_8));
